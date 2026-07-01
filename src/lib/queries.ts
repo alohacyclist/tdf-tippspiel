@@ -199,6 +199,60 @@ export async function listClassificationTips(
   );
 }
 
+export async function getDisplayName(userId: string): Promise<string | null> {
+  const row = unwrap<{ display_name: string | null } | null>(
+    await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", userId)
+      .maybeSingle(),
+  );
+  return row?.display_name ?? null;
+}
+
+export interface PlayerStageTip {
+  stage_id: string;
+  rider_id: string | null;
+  team: string | null;
+  rider: { name: string } | null;
+}
+
+// RLS reveals another player's stage tip only at/after that stage's start.
+export async function listPlayerStageTips(
+  tourId: string,
+  userId: string,
+): Promise<PlayerStageTip[]> {
+  return unwrap(
+    await supabase
+      .from("stage_tips")
+      .select("stage_id, rider_id, team, rider:riders(name)")
+      .eq("tour_id", tourId)
+      .eq("user_id", userId),
+  );
+}
+
+export interface PlayerClsTip {
+  classification_id: string;
+  slot: number;
+  rider_id: string;
+  rider: { name: string } | null;
+}
+
+// RLS reveals another player's classification tips only at/after the deadline.
+export async function listPlayerClassificationTips(
+  tourId: string,
+  userId: string,
+): Promise<PlayerClsTip[]> {
+  return unwrap(
+    await supabase
+      .from("classification_tips")
+      .select("classification_id, slot, rider_id, rider:riders(name)")
+      .eq("tour_id", tourId)
+      .eq("user_id", userId)
+      .order("slot"),
+  );
+}
+
 export async function getLeaderboard(
   tourId: string,
 ): Promise<LeaderboardRow[]> {
