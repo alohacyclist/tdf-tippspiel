@@ -1,32 +1,32 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useApp } from '../lib/appContext'
-import { listMyStageTips, listStages } from '../lib/queries'
-import type { Stage } from '../lib/types'
-import { formatLocal, isPast } from '../lib/time'
-import { Countdown } from '../components/Countdown'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useApp } from "../lib/appContext";
+import { listMyStageTips, listStages } from "../lib/queries";
+import type { Stage } from "../lib/types";
+import { formatLocal, isPast } from "../lib/time";
+import { Countdown } from "../components/Countdown";
 
 export function Stages() {
-  const { tour, userId } = useApp()
-  const [stages, setStages] = useState<Stage[]>([])
-  const [tipped, setTipped] = useState<Set<string>>(new Set())
-  const [error, setError] = useState<string | null>(null)
+  const { tour, userId } = useApp();
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [tipped, setTipped] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([listStages(tour.id), listMyStageTips(tour.id, userId)])
       .then(([s, tips]) => {
-        setStages(s)
-        setTipped(new Set(tips.map((t) => t.stage_id)))
+        setStages(s);
+        setTipped(new Set(tips.map((t) => t.stage_id)));
       })
-      .catch((e) => setError(e.message))
-  }, [tour.id, userId])
+      .catch((e) => setError(e.message));
+  }, [tour.id, userId]);
 
-  if (error) return <p className="text-red-400">{error}</p>
+  if (error) return <p className="text-red-400">{error}</p>;
 
   return (
     <ul className="flex flex-col gap-2 py-2">
       {stages.map((s) => {
-        const started = isPast(s.start_time)
+        const started = isPast(s.start_time);
         return (
           <li key={s.id}>
             <Link
@@ -36,9 +36,23 @@ export function Stages() {
               <div>
                 <div className="font-semibold text-slate-100">
                   Etappe {s.number}
-                  {s.start_city && s.finish_city ? ` · ${s.start_city} → ${s.finish_city}` : ''}
+                  {s.start_city && s.finish_city
+                    ? ` · ${s.start_city} → ${s.finish_city}`
+                    : ""}
+                  {s.type === "ttt" && (
+                    <span className="ml-2 rounded bg-yellow-400/20 px-1.5 py-0.5 text-xs font-medium text-yellow-400">
+                      MZF
+                    </span>
+                  )}
+                  {s.type === "itt" && (
+                    <span className="ml-2 rounded bg-slate-700 px-1.5 py-0.5 text-xs font-medium text-slate-300">
+                      EZF
+                    </span>
+                  )}
                 </div>
-                <div className="text-xs text-slate-400">{formatLocal(s.start_time)}</div>
+                <div className="text-xs text-slate-400">
+                  {formatLocal(s.start_time)}
+                </div>
               </div>
               <div className="text-right text-xs">
                 {started ? (
@@ -48,15 +62,21 @@ export function Stages() {
                     <Countdown iso={s.start_time} />
                   </span>
                 )}
-                <div className={tipped.has(s.id) ? 'text-green-400' : 'text-slate-500'}>
-                  {tipped.has(s.id) ? '✓ getippt' : 'kein Tipp'}
+                <div
+                  className={
+                    tipped.has(s.id) ? "text-green-400" : "text-slate-500"
+                  }
+                >
+                  {tipped.has(s.id) ? "✓ getippt" : "kein Tipp"}
                 </div>
               </div>
             </Link>
           </li>
-        )
+        );
       })}
-      {stages.length === 0 && <p className="text-slate-400">Noch keine Etappen.</p>}
+      {stages.length === 0 && (
+        <p className="text-slate-400">Noch keine Etappen.</p>
+      )}
     </ul>
-  )
+  );
 }

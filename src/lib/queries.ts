@@ -95,14 +95,16 @@ export async function saveStageTip(args: {
   tourId: string;
   userId: string;
   stageId: string;
-  riderId: string;
+  riderId?: string | null;
+  team?: string | null;
 }): Promise<void> {
   const res = await supabase.from("stage_tips").upsert(
     {
       tour_id: args.tourId,
       user_id: args.userId,
       stage_id: args.stageId,
-      rider_id: args.riderId,
+      rider_id: args.riderId ?? null,
+      team: args.team ?? null,
     },
     { onConflict: "user_id,stage_id" },
   );
@@ -112,7 +114,8 @@ export async function saveStageTip(args: {
 export interface RevealedTip {
   id: string;
   user_id: string;
-  rider_id: string;
+  rider_id: string | null;
+  team: string | null;
   rider: { name: string; team: string | null } | null;
   player: { display_name: string | null } | null;
 }
@@ -122,7 +125,7 @@ export async function listStageTips(stageId: string): Promise<RevealedTip[]> {
     await supabase
       .from("stage_tips")
       .select(
-        "id, user_id, rider_id, rider:riders(name, team), player:profiles(display_name)",
+        "id, user_id, rider_id, team, rider:riders(name, team), player:profiles(display_name)",
       )
       .eq("stage_id", stageId),
   );

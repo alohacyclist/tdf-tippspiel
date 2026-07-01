@@ -20,13 +20,20 @@ export function StageDetail() {
   const [stage, setStage] = useState<Stage | null>(null)
   const [riders, setRiders] = useState<Rider[]>([])
   const [pick, setPick] = useState<string | null>(null)
+  const [teamPick, setTeamPick] = useState<string | null>(null)
   const [reveal, setReveal] = useState<RevealedTip[]>([])
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
+  const isTtt = stage?.type === 'ttt'
   const started = isPast(stage?.start_time ?? null)
   const ridersById = useMemo(() => new Map(riders.map((r) => [r.id, r])), [riders])
   const activeRiders = useMemo(() => riders.filter((r) => r.is_active), [riders])
+  const teams = useMemo(
+    () =>
+      [...new Set(activeRiders.map((r) => r.team).filter((t): t is string => !!t))].sort(),
+    [activeRiders],
+  )
 
   useEffect(() => {
     if (!stageId) return
@@ -35,16 +42,25 @@ export function StageDetail() {
         setStage(s)
         setRiders(rs)
         setPick(tip?.rider_id ?? null)
+        setTeamPick(tip?.team ?? null)
         if (s && isPast(s.start_time)) return listStageTips(stageId).then(setReveal)
       })
       .catch((e) => setError(e.message))
   }, [stageId, tour.id, userId])
 
   async function save() {
-    if (!stageId || !pick) return
+    if (!stageId) return
+    const chosen = isTtt ? teamPick : pick
+    if (!chosen) return
     setError(null)
     try {
-      await saveStageTip({ tourId: tour.id, userId, stageId, riderId: pick })
+      await saveStageTip({
+        tourId: tour.id,
+        userId,
+        stageId,
+        riderId: isTtt ? null : pick,
+        team: isTtt ? teamPick : null,
+      })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (e) {
@@ -56,7 +72,8 @@ export function StageDetail() {
   if (!stage) return <p className="py-4 text-slate-400">Laden…</p>
 
   const myRider = pick ? ridersById.get(pick) : null
-  const dnf = myRider && !myRider.is_active
+  const dnf = !isTtt && myRider && !myRider.is_active
+  const canSave = isTtt ? !!teamPick : !!pick
 
   return (
     <div className="py-3">
@@ -66,6 +83,9 @@ export function StageDetail() {
       <h1 className="mt-2 text-xl font-bold text-slate-100">
         Etappe {stage.number}
         {stage.start_city && stage.finish_city ? ` · ${stage.start_city} → ${stage.finish_city}` : ''}
+        {isTtt && (
+          <span className="ml-2 text-sm font-normal text-yellow-400">Mannschaftszeitfahren</span>
+        )}
       </h1>
       <p className="text-sm text-slate-400">
         Start: {formatLocal(stage.start_time)}{' '}
@@ -78,16 +98,33 @@ export function StageDetail() {
 
       {!started ? (
         <div className="mt-5">
-          <h2 className="mb-2 font-semibold text-slate-200">Dein Etappensieger-Tipp</h2>
+          <h2 className="mb-2 font-semibold text-slate-200">
+            {isTtt ? 'Dein Team-Tipp (Sieger-Mannschaft)' : 'Dein Etappensieger-Tipp'}
+          </h2>
           {dnf && (
             <p className="mb-2 rounded-lg bg-red-950 p-2 text-sm text-red-300">
               Dein getippter Fahrer ist ausgeschieden — bitte neu tippen.
             </p>
           )}
-          <RiderCombobox riders={activeRiders} value={pick} onSelect={setPick} />
+          {isTtt ? (
+            <select
+              value={teamPick ?? ''}
+              onChange={(e) => setTeamPick(e.target.value || null)}
+              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-yellow-400"
+            >
+              <option value="">Mannschaft wählen…</option>
+              {teams.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <RiderCombobox riders={activeRiders} value={pick} onSelect={setPick} />
+          )}
           <button
             onClick={save}
-            disabled={!pick}
+            disabled={!canSave}
             className="mt-3 w-full rounded-lg bg-yellow-400 px-3 py-2 font-semibold text-slate-900 disabled:opacity-50"
           >
             {saved ? 'Gespeichert ✓' : 'Tipp speichern'}
@@ -99,18 +136,23 @@ export function StageDetail() {
       ) : (
         <div className="mt-5">
           <h2 className="mb-2 font-semibold text-slate-200">Tipps & Ergebnis</h2>
-          {stage.winner_rider_id && (
-            <p className="mb-3 rounded-lg bg-green-950 p-2 text-sm text-green-300">
-              Sieger: {ridersById.get(stage.winner_rider_id)?.name ?? '—'}
-            </p>
-          )}
+          {isTtt
+            ? stage.winner_team && (
+                <p className="mb-3 rounded-lg bg-green-950 p-2 text-sm text-green-300">
+                  Sieger-Mannschaft: {stage.winner_team}
+                </p>
+              )
+            : stage.winner_rider_id && (
+                <p className="mb-3 rounded-lg bg-green-950 p-2 text-sm text-green-300">
+                  Sieger: {ridersById.get(stage.winner_rider_id)?.name ?? '—'}
+                </p>
+              )}
           <ul className="flex flex-col gap-1">
             {reveal.map((t) => {
-              const correct =
-                stage.winner_rider_id === t.rider_id ||
-                (stage.type === 'ttt' &&
-                  stage.winner_team != null &&
-                  t.rider?.team === stage.winner_team)
+              const correct = isTtt
+                ? stage.winner_team != null && t.team === stage.winner_team
+                : stage.winner_rider_id === t.rider_id
+              const label = isTtt ? (t.team ?? '—') : (t.rider?.name ?? '—')
               return (
                 <li
                   key={t.id}
@@ -118,7 +160,7 @@ export function StageDetail() {
                 >
                   <span className="text-slate-300">{t.player?.display_name ?? '—'}</span>
                   <span className={correct ? 'font-semibold text-green-400' : 'text-slate-200'}>
-                    {t.rider?.name ?? '—'}
+                    {label}
                   </span>
                 </li>
               )
