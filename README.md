@@ -51,14 +51,17 @@ RLS-Policies — nicht im Client.
 npm i -g supabase                          # CLI (kein Docker nötig fürs reine Push)
 supabase login                             # Browser-Token bestätigen
 supabase link --project-ref <PROJECT_REF>  # fragt nach DB-Passwort
-supabase db push                           # wendet 0001_schema, 0002_rls, 0003_seed an
+supabase db push                           # wendet 0001..0005 an (Schema, RLS, Seed, Route+Startliste)
 ```
-Prüfen: **Table Editor** zeigt `tours`, `stages`, `profiles`, `tips`, `scoring_config`,
-`classifications`. **Authentication → Policies**: RLS aktiv.
+Prüfen: **Table Editor** zeigt `tours`, `stages` (21 Etappen), `riders` (~145), `profiles`,
+`scoring_config`, `classifications`. **Authentication → Policies**: RLS aktiv.
 
-> ⚠️ **Vor echtem Launch**: offizielle **Startzeit Etappe 1** (ASO-Roadbook) in
-> `supabase/migrations/0003_seed.sql` als **UTC mit explizitem Offset** (Barcelona = `+02` im Juli)
-> eintragen, PCS-Zeitlabel nicht vertrauen → danach `supabase db push` erneut (Seed ist idempotent).
+> ⚠️ **Vor echtem Launch — zwei Dinge aus `0005_seed_2026.sql`:**
+> 1. **Startzeiten sind Platzhalter** (12:00 CEST). `deadline = reveal = start_time` → jede Etappe
+>    gegen das offizielle ASO-Roadbook prüfen und `stages.start_time` als **UTC mit Offset** (`+02` im
+>    Juli) per SQL updaten. Etappe 1 = **Mannschaftszeitfahren** (Barcelona).
+> 2. **Startliste ist provisorisch** (nur bestätigte Fahrer, keine Startnummern). Nach der
+>    Teampräsentation neu ziehen und Rosters/Bibs ergänzen.
 
 ## 3 — Supabase Auth (Magic-Link)
 **Authentication → URL Configuration:**
