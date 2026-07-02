@@ -78,19 +78,6 @@ export async function getMyStageTip(
   );
 }
 
-export async function listMyStageTips(
-  tourId: string,
-  userId: string,
-): Promise<StageTip[]> {
-  return unwrap(
-    await supabase
-      .from("stage_tips")
-      .select("*")
-      .eq("tour_id", tourId)
-      .eq("user_id", userId),
-  );
-}
-
 export async function saveStageTip(args: {
   tourId: string;
   userId: string;

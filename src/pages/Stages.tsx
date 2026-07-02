@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "../lib/appContext";
-import { listMyStageTips, listStages } from "../lib/queries";
+import { listPlayerStageTips, listStages } from "../lib/queries";
 import type { Stage } from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
 import { Countdown } from "../components/Countdown";
@@ -9,14 +9,16 @@ import { Countdown } from "../components/Countdown";
 export function Stages() {
   const { tour, userId } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
-  const [tipped, setTipped] = useState<Set<string>>(new Set());
+  const [tips, setTips] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([listStages(tour.id), listMyStageTips(tour.id, userId)])
-      .then(([s, tips]) => {
+    Promise.all([listStages(tour.id), listPlayerStageTips(tour.id, userId)])
+      .then(([s, ts]) => {
         setStages(s);
-        setTipped(new Set(tips.map((t) => t.stage_id)));
+        setTips(
+          new Map(ts.map((t) => [t.stage_id, t.team ?? t.rider?.name ?? "—"])),
+        );
       })
       .catch((e) => setError(e.message));
   }, [tour.id, userId]);
@@ -64,10 +66,10 @@ export function Stages() {
                 )}
                 <div
                   className={
-                    tipped.has(s.id) ? "text-green-400" : "text-slate-500"
+                    tips.has(s.id) ? "text-green-400" : "text-slate-500"
                   }
                 >
-                  {tipped.has(s.id) ? "✓ getippt" : "kein Tipp"}
+                  {tips.get(s.id) ?? "kein Tipp"}
                 </div>
               </div>
             </Link>
