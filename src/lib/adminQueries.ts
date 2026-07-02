@@ -79,3 +79,81 @@ export function adminSetStageResult(a: {
     p_close: a.close,
   });
 }
+
+// --- Free-form questions (Phase 2) ---
+
+export function adminCreateQuestion(a: {
+  tourId: string;
+  kind: "boolean" | "choice";
+  prompt: string;
+  points: number;
+  stageId?: string | null;
+  deadline?: string | null;
+  help?: string | null;
+}): Promise<string> {
+  return rpc("admin_create_question", {
+    p_tour_id: a.tourId,
+    p_kind: a.kind,
+    p_prompt: a.prompt,
+    p_points: a.points,
+    p_stage_id: a.stageId ?? null,
+    p_deadline: a.deadline ?? null,
+    p_help: a.help ?? null,
+  });
+}
+
+export function adminAddQuestionOption(
+  questionId: string,
+  label: string,
+  sort: number,
+): Promise<string> {
+  return rpc("admin_add_question_option", {
+    p_question_id: questionId,
+    p_label: label,
+    p_sort: sort,
+  });
+}
+
+export function adminDeleteQuestionOption(optionId: string): Promise<void> {
+  return rpc("admin_delete_question_option", { p_option_id: optionId });
+}
+
+export function adminUpdateQuestion(a: {
+  id: string;
+  prompt: string;
+  points: number;
+  isOpen: boolean;
+  deadline?: string | null;
+}): Promise<void> {
+  return rpc("admin_update_question", {
+    p_id: a.id,
+    p_prompt: a.prompt,
+    p_points: a.points,
+    p_is_open: a.isOpen,
+    p_deadline: a.deadline ?? null,
+  });
+}
+
+export function adminSetQuestionOpen(id: string, open: boolean): Promise<void> {
+  return rpc("admin_set_question_open", { p_id: id, p_open: open });
+}
+
+export function adminSetQuestionResult(a: {
+  id: string;
+  bool?: boolean | null;
+  optionId?: string | null;
+}): Promise<void> {
+  return rpc("admin_set_question_result", {
+    p_id: a.id,
+    p_bool: a.bool ?? null,
+    p_option_id: a.optionId ?? null,
+  });
+}
+
+export function adminClearQuestionResult(id: string): Promise<void> {
+  return rpc("admin_clear_question_result", { p_id: id });
+}
+
+export function adminDeleteQuestion(id: string): Promise<void> {
+  return rpc("admin_delete_question", { p_id: id });
+}

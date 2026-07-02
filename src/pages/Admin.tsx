@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "../lib/appContext";
-import { listClassifications, listRiders, listStages } from "../lib/queries";
+import {
+  listClassifications,
+  listQuestions,
+  listRiders,
+  listStages,
+  type QuestionWithOptions,
+} from "../lib/queries";
 import {
   adminCreateClassification,
   adminSetClassificationOpen,
@@ -11,6 +17,7 @@ import {
 import type { Classification, Rider, Stage } from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
 import { RiderCombobox } from "../components/RiderCombobox";
+import { QuestionsSection } from "../components/AdminQuestions";
 
 function toIso(local: string): string {
   return new Date(local).toISOString();
@@ -21,18 +28,21 @@ export function Admin() {
   const [stages, setStages] = useState<Stage[]>([]);
   const [riders, setRiders] = useState<Rider[]>([]);
   const [cls, setCls] = useState<Classification[]>([]);
+  const [questions, setQuestions] = useState<QuestionWithOptions[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   async function reload() {
     try {
-      const [s, r, c] = await Promise.all([
+      const [s, r, c, q] = await Promise.all([
         listStages(tour.id),
         listRiders(tour.id),
         listClassifications(tour.id),
+        listQuestions(tour.id),
       ]);
       setStages(s);
       setRiders(r);
       setCls(c);
+      setQuestions(q);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Fehler");
     }
@@ -87,6 +97,14 @@ export function Admin() {
       </div>
 
       <StageResult stages={stages} riders={activeRiders} onDone={reload} />
+
+      <QuestionsSection
+        tourId={tour.id}
+        stages={stages}
+        questions={questions}
+        stageById={stageById}
+        onDone={reload}
+      />
     </div>
   );
 }

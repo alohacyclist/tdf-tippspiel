@@ -79,6 +79,44 @@ export interface ClassificationTip {
   slot: number;
 }
 
+export type QuestionKind = "boolean" | "choice";
+
+export interface Question {
+  id: string;
+  tour_id: string;
+  stage_id: string | null;
+  kind: QuestionKind;
+  prompt: string;
+  help_text: string | null;
+  points: number;
+  deadline: string | null;
+  is_open: boolean;
+  is_resolved: boolean;
+  sort_order: number;
+}
+
+export interface QuestionOption {
+  id: string;
+  question_id: string;
+  label: string;
+  sort_order: number;
+}
+
+export interface QuestionAnswer {
+  id: string;
+  tour_id: string;
+  user_id: string;
+  question_id: string;
+  option_id: string | null;
+  bool_value: boolean | null;
+}
+
+export interface QuestionResult {
+  question_id: string;
+  option_id: string | null;
+  bool_value: boolean | null;
+}
+
 export interface LeaderboardRow {
   tour_id: string;
   user_id: string;
