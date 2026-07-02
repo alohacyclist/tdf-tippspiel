@@ -5,6 +5,7 @@ import {
   getMyStageTip,
   getStage,
   listRiders,
+  listStages,
   listStageTips,
   saveStageTip,
   type RevealedTip,
@@ -28,6 +29,7 @@ export function StageDetail() {
   const { stageId } = useParams();
   const { tour, userId } = useApp();
   const [stage, setStage] = useState<Stage | null>(null);
+  const [stages, setStages] = useState<Stage[]>([]);
   const [riders, setRiders] = useState<Rider[]>([]);
   const [pick, setPick] = useState<string | null>(null);
   const [teamPick, setTeamPick] = useState<string | null>(null);
@@ -59,19 +61,30 @@ export function StageDetail() {
     if (!stageId) return;
     Promise.all([
       getStage(stageId),
+      listStages(tour.id),
       listRiders(tour.id),
       getMyStageTip(stageId, userId),
     ])
-      .then(([s, rs, tip]) => {
+      .then(([s, all, rs, tip]) => {
         setStage(s);
+        setStages(all);
         setRiders(rs);
         setPick(tip?.rider_id ?? null);
         setTeamPick(tip?.team ?? null);
+        setReveal([]);
         if (s && isPast(s.start_time))
           return listStageTips(stageId).then(setReveal);
       })
       .catch((e) => setError(e.message));
   }, [stageId, tour.id, userId]);
+
+  const { prev, next } = useMemo(() => {
+    const i = stages.findIndex((s) => s.id === stageId);
+    return {
+      prev: i > 0 ? stages[i - 1] : null,
+      next: i >= 0 && i < stages.length - 1 ? stages[i + 1] : null,
+    };
+  }, [stages, stageId]);
 
   async function save() {
     if (!stageId) return;
@@ -102,9 +115,27 @@ export function StageDetail() {
 
   return (
     <div className="py-3">
-      <Link to="/" className="text-sm text-slate-400">
-        ← Etappen
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link to="/" className="text-sm text-slate-400">
+          ← Etappen
+        </Link>
+        <div className="flex gap-3 text-sm">
+          {prev ? (
+            <Link to={`/stage/${prev.id}`} className="text-yellow-400">
+              ← Etappe {prev.number}
+            </Link>
+          ) : (
+            <span className="text-slate-600">← Etappe</span>
+          )}
+          {next ? (
+            <Link to={`/stage/${next.id}`} className="text-yellow-400">
+              Etappe {next.number} →
+            </Link>
+          ) : (
+            <span className="text-slate-600">Etappe →</span>
+          )}
+        </div>
+      </div>
       <h1 className="mt-2 text-xl font-bold text-slate-100">
         Etappe {stage.number}
         {stage.start_city && stage.finish_city
