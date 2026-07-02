@@ -16,6 +16,16 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
           Tour-Tippspiel
         </span>
         <div className="flex items-center gap-4">
+          {ctx.isAdmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `text-sm ${isActive ? "text-yellow-400" : "text-slate-400 hover:text-slate-200"}`
+              }
+            >
+              Admin
+            </NavLink>
+          )}
           <NavLink
             to="/profil"
             className={({ isActive }) =>

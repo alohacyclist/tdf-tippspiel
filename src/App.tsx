@@ -12,6 +12,7 @@ import { Specials } from "./pages/Specials";
 import { Leaderboard } from "./pages/Leaderboard";
 import { PlayerTips } from "./pages/PlayerTips";
 import { Profil } from "./pages/Profil";
+import { Admin } from "./pages/Admin";
 
 function Center({ children }: { children: React.ReactNode }) {
   return (
@@ -21,7 +22,7 @@ function Center({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ActiveApp({ userId }: { userId: string }) {
+function ActiveApp({ userId, isAdmin }: { userId: string; isAdmin: boolean }) {
   const [tour, setTour] = useState<Tour | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ function ActiveApp({ userId }: { userId: string }) {
   if (error) return <Center>{error}</Center>;
   if (!tour) return <Center>Laden…</Center>;
 
-  const ctx = { tour, userId };
+  const ctx = { tour, userId, isAdmin };
   return (
     <Routes>
       <Route element={<Layout ctx={ctx} />}>
@@ -44,6 +45,7 @@ function ActiveApp({ userId }: { userId: string }) {
         <Route path="rangliste" element={<Leaderboard />} />
         <Route path="spieler/:userId" element={<PlayerTips />} />
         <Route path="profil" element={<Profil />} />
+        {isAdmin && <Route path="admin" element={<Admin />} />}
         <Route path="*" element={<Stages />} />
       </Route>
     </Routes>
@@ -60,5 +62,5 @@ export default function App() {
   if (profile.status === "blocked") return <Center>Account gesperrt.</Center>;
   if (profile.status === "pending")
     return <Center>Danke! Warte auf Freischaltung durch den Admin.</Center>;
-  return <ActiveApp userId={session.user.id} />;
+  return <ActiveApp userId={session.user.id} isAdmin={profile.is_admin} />;
 }

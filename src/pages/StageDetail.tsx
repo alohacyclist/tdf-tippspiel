@@ -4,17 +4,26 @@ import { useApp } from "../lib/appContext";
 import {
   getMyStageTip,
   getStage,
+  listClassifications,
+  listMyClassificationTips,
   listRiders,
   listStages,
   listStageTips,
   saveStageTip,
   type RevealedTip,
 } from "../lib/queries";
-import type { Rider, Stage, StageType } from "../lib/types";
+import type {
+  Classification,
+  ClassificationTip,
+  Rider,
+  Stage,
+  StageType,
+} from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
 import { RiderCombobox } from "../components/RiderCombobox";
 import { Countdown } from "../components/Countdown";
 import { StageProfile } from "../components/StageProfile";
+import { ClassificationCard } from "../components/ClassificationCard";
 import { pcsStageUrl } from "../lib/pcs";
 
 const TYPE_LABEL: Record<StageType, string> = {
@@ -34,8 +43,15 @@ export function StageDetail() {
   const [pick, setPick] = useState<string | null>(null);
   const [teamPick, setTeamPick] = useState<string | null>(null);
   const [reveal, setReveal] = useState<RevealedTip[]>([]);
+  const [clsList, setClsList] = useState<Classification[]>([]);
+  const [clsTips, setClsTips] = useState<ClassificationTip[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  const stageClassifications = useMemo(
+    () => clsList.filter((c) => c.stage_id === stageId),
+    [clsList, stageId],
+  );
 
   const isTtt = stage?.type === "ttt";
   const started = isPast(stage?.start_time ?? null);
@@ -64,13 +80,17 @@ export function StageDetail() {
       listStages(tour.id),
       listRiders(tour.id),
       getMyStageTip(stageId, userId),
+      listClassifications(tour.id),
+      listMyClassificationTips(tour.id, userId),
     ])
-      .then(([s, all, rs, tip]) => {
+      .then(([s, all, rs, tip, cls, ctips]) => {
         setStage(s);
         setStages(all);
         setRiders(rs);
         setPick(tip?.rider_id ?? null);
         setTeamPick(tip?.team ?? null);
+        setClsList(cls);
+        setClsTips(ctips);
         setReveal([]);
         if (s && isPast(s.start_time))
           return listStageTips(stageId).then(setReveal);
@@ -260,6 +280,23 @@ export function StageDetail() {
               <p className="text-slate-400">Keine Tipps abgegeben.</p>
             )}
           </ul>
+        </div>
+      )}
+
+      {stageClassifications.length > 0 && (
+        <div className="mt-6 flex flex-col gap-3">
+          <h2 className="font-semibold text-slate-200">Etappen-Wertungen</h2>
+          {stageClassifications.map((c) => (
+            <ClassificationCard
+              key={c.id}
+              classification={c}
+              riders={riders}
+              myTips={clsTips.filter((t) => t.classification_id === c.id)}
+              tourId={tour.id}
+              userId={userId}
+              deadlineOverride={stage.start_time}
+            />
+          ))}
         </div>
       )}
     </div>

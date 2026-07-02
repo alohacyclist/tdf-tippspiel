@@ -59,12 +59,13 @@ export type ClassificationType = "gc" | "points" | "kom" | "youth" | "custom";
 export interface Classification {
   id: string;
   tour_id: string;
+  stage_id: string | null;
   key: string;
   name: string;
   type: ClassificationType;
   slots: number;
   ordered: boolean;
-  deadline: string;
+  deadline: string | null;
   is_open: boolean;
   points: number | null;
 }
