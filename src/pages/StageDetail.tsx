@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useApp } from "../lib/appContext";
+import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import {
   getMyStageTip,
   getStage,
@@ -120,6 +121,26 @@ export function StageDetail() {
       next: i >= 0 && i < stages.length - 1 ? stages[i + 1] : null,
     };
   }, [stages, stageId]);
+
+  // After the start, poll (and refetch on tab focus) for the winner + revealed tips
+  // until the admin has entered a result, then stop.
+  const loadResult = useCallback(() => {
+    if (!stageId) return;
+    getStage(stageId)
+      .then((s) => s && setStage(s))
+      .catch(() => {});
+    listStageTips(stageId)
+      .then(setReveal)
+      .catch(() => {});
+  }, [stageId]);
+
+  const awaitingResult =
+    stage != null &&
+    isPast(stage.start_time) &&
+    stage.winner_rider_id === null &&
+    stage.winner_team === null;
+
+  useAutoRefresh(loadResult, awaitingResult);
 
   async function save() {
     if (!stageId) return;

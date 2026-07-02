@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getQuestionResult,
   listQuestionAnswers,
@@ -12,6 +12,7 @@ import type {
   QuestionResult,
 } from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
+import { useAutoRefresh } from "../hooks/useAutoRefresh";
 
 interface Props {
   question: QuestionWithOptions;
@@ -61,16 +62,21 @@ export function QuestionCard({
     return () => clearTimeout(id);
   }, [past, effectiveDeadline]);
 
+  const loadReveal = useCallback(() => {
+    listQuestionAnswers(q.id)
+      .then(setReveal)
+      .catch((e) => setError(e.message));
+    getQuestionResult(q.id)
+      .then(setResult)
+      .catch(() => {});
+  }, [q.id]);
+
   useEffect(() => {
-    if (past) {
-      listQuestionAnswers(q.id)
-        .then(setReveal)
-        .catch((e) => setError(e.message));
-      getQuestionResult(q.id)
-        .then(setResult)
-        .catch(() => {});
-    }
-  }, [past, q.id]);
+    if (past) loadReveal();
+  }, [past, loadReveal]);
+
+  // Poll (and refetch on tab focus) until the admin's result lands, then stop.
+  useAutoRefresh(loadReveal, past && result === null);
 
   async function saveBool(v: boolean) {
     setError(null);
