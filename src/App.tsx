@@ -11,6 +11,7 @@ import { StageDetail } from "./pages/StageDetail";
 import { Specials } from "./pages/Specials";
 import { Leaderboard } from "./pages/Leaderboard";
 import { PlayerTips } from "./pages/PlayerTips";
+import { Profil } from "./pages/Profil";
 
 function Center({ children }: { children: React.ReactNode }) {
   return (
@@ -42,6 +43,7 @@ function ActiveApp({ userId }: { userId: string }) {
         <Route path="specials" element={<Specials />} />
         <Route path="rangliste" element={<Leaderboard />} />
         <Route path="spieler/:userId" element={<PlayerTips />} />
+        <Route path="profil" element={<Profil />} />
         <Route path="*" element={<Stages />} />
       </Route>
     </Routes>

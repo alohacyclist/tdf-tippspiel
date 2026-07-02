@@ -15,12 +15,22 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
         <span className="text-lg font-bold text-yellow-400">
           Tour-Tippspiel
         </span>
-        <button
-          className="text-sm text-slate-400 hover:text-slate-200"
-          onClick={() => supabase.auth.signOut()}
-        >
-          Abmelden
-        </button>
+        <div className="flex items-center gap-4">
+          <NavLink
+            to="/profil"
+            className={({ isActive }) =>
+              `text-sm ${isActive ? "text-yellow-400" : "text-slate-400 hover:text-slate-200"}`
+            }
+          >
+            Profil
+          </NavLink>
+          <button
+            className="text-sm text-slate-400 hover:text-slate-200"
+            onClick={() => supabase.auth.signOut()}
+          >
+            Abmelden
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 px-4 pb-24">
