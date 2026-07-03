@@ -3,7 +3,7 @@
 -- is_admin gate on RPCs, and the results-before-deadline guard.
 begin;
 create extension if not exists pgtap;
-select plan(12);
+select plan(14);
 
 -- users: A = admin, B = normal member
 insert into auth.users (id, email) values
@@ -97,6 +97,9 @@ select is(
    where classification_id = 'c5550000-0000-0000-0000-000000000002'
      and user_id = 'b0000000-0000-0000-0000-000000000002'),
   0, 'A cannot see B''s stage-attached tip before the stage starts (derived reveal)');
+select lives_ok(
+  $$ select public.admin_delete_classification('c5550000-0000-0000-0000-000000000002') $$,
+  'admin deletes a classification');
 reset role;
 
 -- ---- effects ----
@@ -110,6 +113,9 @@ select is(
   (select rider_id from classification_results
    where classification_id = 'c5550000-0000-0000-0000-000000000001' and rank = 1),
   '51110000-0000-0000-0000-000000000001'::uuid, 'classification result stored at rank 1');
+select is(
+  (select count(*)::int from classifications where id = 'c5550000-0000-0000-0000-000000000002'),
+  0, 'deleted classification is gone');
 
 select * from finish();
 rollback;

@@ -10,6 +10,7 @@ import {
 } from "../lib/queries";
 import {
   adminCreateClassification,
+  adminDeleteClassification,
   adminSetClassificationOpen,
   adminSetClassificationResults,
   adminSetStageResult,
@@ -296,6 +297,22 @@ function ClassificationRow({
     }
   }
 
+  async function remove() {
+    if (
+      !window.confirm(
+        `Wertung „${c.name}“ löschen? Tipps und Ergebnisse gehen verloren.`,
+      )
+    )
+      return;
+    setError(null);
+    try {
+      await adminDeleteClassification(c.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Fehler");
+    }
+  }
+
   async function saveResults() {
     // Build in slot (=rank) order. For ordered classifications the ranks must be
     // contiguous from Platz 1 — a gap would shift every later rider up a rank.
@@ -335,12 +352,17 @@ function ClassificationRow({
             {c.stage_id ? "Etappe" : "Tour"} · bis {formatLocal(deadline)}
           </span>
         </span>
-        <button
-          onClick={toggleOpen}
-          className={`text-xs ${c.is_open ? "text-green-400" : "text-slate-400"}`}
-        >
-          {c.is_open ? "offen" : "geschlossen"}
-        </button>
+        <div className="flex shrink-0 gap-3">
+          <button
+            onClick={toggleOpen}
+            className={`text-xs ${c.is_open ? "text-green-400" : "text-slate-400"}`}
+          >
+            {c.is_open ? "offen" : "geschlossen"}
+          </button>
+          <button onClick={remove} className="text-xs text-red-400">
+            löschen
+          </button>
+        </div>
       </div>
 
       {revealed && (

@@ -56,6 +56,10 @@ export function adminSetClassificationOpen(
   return rpc("admin_set_classification_open", { p_id: id, p_open: open });
 }
 
+export function adminDeleteClassification(id: string): Promise<void> {
+  return rpc("admin_delete_classification", { p_id: id });
+}
+
 export function adminSetClassificationResults(
   id: string,
   riderIds: string[],
