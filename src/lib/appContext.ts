@@ -5,6 +5,8 @@ export interface AppCtx {
   tour: Tour;
   userId: string;
   isAdmin: boolean;
+  canEdit: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 export const useApp = () => useOutletContext<AppCtx>();

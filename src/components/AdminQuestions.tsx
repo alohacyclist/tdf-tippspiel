@@ -21,12 +21,14 @@ export function QuestionsSection({
   stages,
   questions,
   stageById,
+  isAdmin,
   onDone,
 }: {
   tourId: string;
   stages: Stage[];
   questions: QuestionWithOptions[];
   stageById: Map<string, Stage>;
+  isAdmin: boolean;
   onDone: () => void;
 }) {
   return (
@@ -46,6 +48,7 @@ export function QuestionsSection({
                 ? (stageById.get(q.stage_id)?.start_time ?? null)
                 : q.deadline
             }
+            canDelete={isAdmin}
             onDone={onDone}
           />
         ))}
@@ -244,10 +247,12 @@ function CreateQuestion({
 function QuestionRow({
   q,
   deadline,
+  canDelete,
   onDone,
 }: {
   q: QuestionWithOptions;
   deadline: string | null;
+  canDelete: boolean;
   onDone: () => void;
 }) {
   const [optLabel, setOptLabel] = useState("");
@@ -296,12 +301,14 @@ function QuestionRow({
           >
             {q.is_open ? "offen" : "zu"}
           </button>
-          <button
-            onClick={() => act(() => adminDeleteQuestion(q.id))}
-            className="text-xs text-red-400"
-          >
-            löschen
-          </button>
+          {canDelete && (
+            <button
+              onClick={() => act(() => adminDeleteQuestion(q.id))}
+              className="text-xs text-red-400"
+            >
+              löschen
+            </button>
+          )}
         </div>
       </div>
 
@@ -313,12 +320,14 @@ function QuestionRow({
               className="flex items-center justify-between text-sm"
             >
               <span className="text-slate-300">{o.label}</span>
-              <button
-                onClick={() => act(() => adminDeleteQuestionOption(o.id))}
-                className="text-xs text-red-400"
-              >
-                ✕
-              </button>
+              {canDelete && (
+                <button
+                  onClick={() => act(() => adminDeleteQuestionOption(o.id))}
+                  className="text-xs text-red-400"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ))}
           <div className="mt-1 flex gap-2">

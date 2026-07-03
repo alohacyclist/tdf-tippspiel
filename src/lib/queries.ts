@@ -3,6 +3,8 @@ import type {
   Classification,
   ClassificationTip,
   LeaderboardRow,
+  ProfileRole,
+  ProfileStatus,
   Question,
   QuestionAnswer,
   QuestionOption,
@@ -241,6 +243,23 @@ export async function listPlayerClassificationTips(
       .eq("tour_id", tourId)
       .eq("user_id", userId)
       .order("slot"),
+  );
+}
+
+export interface AdminProfile {
+  id: string;
+  display_name: string | null;
+  role: ProfileRole;
+  status: ProfileStatus;
+}
+
+// Active members can already read all profiles (RLS); the admin UI shows role + status.
+export async function listProfiles(): Promise<AdminProfile[]> {
+  return unwrap(
+    await supabase
+      .from("profiles")
+      .select("id, display_name, role, status")
+      .order("display_name"),
   );
 }
 

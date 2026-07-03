@@ -22,7 +22,17 @@ function Center({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ActiveApp({ userId, isAdmin }: { userId: string; isAdmin: boolean }) {
+function ActiveApp({
+  userId,
+  isAdmin,
+  canEdit,
+  refreshProfile,
+}: {
+  userId: string;
+  isAdmin: boolean;
+  canEdit: boolean;
+  refreshProfile: () => Promise<void>;
+}) {
   const [tour, setTour] = useState<Tour | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +45,7 @@ function ActiveApp({ userId, isAdmin }: { userId: string; isAdmin: boolean }) {
   if (error) return <Center>{error}</Center>;
   if (!tour) return <Center>Laden…</Center>;
 
-  const ctx = { tour, userId, isAdmin };
+  const ctx = { tour, userId, isAdmin, canEdit, refreshProfile };
   return (
     <Routes>
       <Route element={<Layout ctx={ctx} />}>
@@ -45,7 +55,7 @@ function ActiveApp({ userId, isAdmin }: { userId: string; isAdmin: boolean }) {
         <Route path="rangliste" element={<Leaderboard />} />
         <Route path="spieler/:userId" element={<PlayerTips />} />
         <Route path="profil" element={<Profil />} />
-        {isAdmin && <Route path="admin" element={<Admin />} />}
+        {canEdit && <Route path="admin" element={<Admin />} />}
         <Route path="*" element={<Stages />} />
       </Route>
     </Routes>
@@ -62,5 +72,12 @@ export default function App() {
   if (profile.status === "blocked") return <Center>Account gesperrt.</Center>;
   if (profile.status === "pending")
     return <Center>Danke! Warte auf Freischaltung durch den Admin.</Center>;
-  return <ActiveApp userId={session.user.id} isAdmin={profile.is_admin} />;
+  return (
+    <ActiveApp
+      userId={session.user.id}
+      isAdmin={profile.role === "admin"}
+      canEdit={profile.role === "editor" || profile.role === "admin"}
+      refreshProfile={refreshProfile}
+    />
+  );
 }

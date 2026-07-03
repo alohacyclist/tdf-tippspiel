@@ -1,10 +1,11 @@
 export type ProfileStatus = "pending" | "active" | "blocked";
+export type ProfileRole = "member" | "editor" | "admin";
 
 export interface Profile {
   id: string;
   display_name: string | null;
   status: ProfileStatus;
-  is_admin: boolean;
+  role: ProfileRole;
 }
 
 export interface Tour {

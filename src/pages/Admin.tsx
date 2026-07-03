@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { useApp } from "../lib/appContext";
 import {
   listClassifications,
+  listProfiles,
   listQuestions,
   listRiders,
   listStages,
+  type AdminProfile,
   type QuestionWithOptions,
 } from "../lib/queries";
 import {
@@ -13,9 +15,10 @@ import {
   adminDeleteClassification,
   adminSetClassificationOpen,
   adminSetClassificationResults,
+  adminSetRole,
   adminSetStageResult,
 } from "../lib/adminQueries";
-import type { Classification, Rider, Stage } from "../lib/types";
+import type { Classification, ProfileRole, Rider, Stage } from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
 import { RiderCombobox } from "../components/RiderCombobox";
 import { QuestionsSection } from "../components/AdminQuestions";
@@ -25,25 +28,28 @@ function toIso(local: string): string {
 }
 
 export function Admin() {
-  const { tour, isAdmin } = useApp();
+  const { tour, isAdmin, canEdit } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
   const [riders, setRiders] = useState<Rider[]>([]);
   const [cls, setCls] = useState<Classification[]>([]);
   const [questions, setQuestions] = useState<QuestionWithOptions[]>([]);
+  const [profiles, setProfiles] = useState<AdminProfile[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   async function reload() {
     try {
-      const [s, r, c, q] = await Promise.all([
+      const [s, r, c, q, p] = await Promise.all([
         listStages(tour.id),
         listRiders(tour.id),
         listClassifications(tour.id),
         listQuestions(tour.id),
+        isAdmin ? listProfiles() : Promise.resolve([]),
       ]);
       setStages(s);
       setRiders(r);
       setCls(c);
       setQuestions(q);
+      setProfiles(p);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Fehler");
     }
@@ -63,7 +69,7 @@ export function Admin() {
     [riders],
   );
 
-  if (!isAdmin) return <p className="py-4 text-red-400">Kein Zugriff.</p>;
+  if (!canEdit) return <p className="py-4 text-red-400">Kein Zugriff.</p>;
 
   return (
     <div className="py-3">
@@ -89,6 +95,7 @@ export function Admin() {
                 ? (stageById.get(c.stage_id)?.start_time ?? null)
                 : c.deadline
             }
+            canDelete={isAdmin}
             onDone={reload}
           />
         ))}
@@ -104,9 +111,72 @@ export function Admin() {
         stages={stages}
         questions={questions}
         stageById={stageById}
+        isAdmin={isAdmin}
         onDone={reload}
       />
+
+      {isAdmin && <UsersSection profiles={profiles} onDone={reload} />}
     </div>
+  );
+}
+
+function UsersSection({
+  profiles,
+  onDone,
+}: {
+  profiles: AdminProfile[];
+  onDone: () => void;
+}) {
+  const { userId, refreshProfile } = useApp();
+  const [error, setError] = useState<string | null>(null);
+  const ROLES: ProfileRole[] = ["member", "editor", "admin"];
+
+  async function setRole(targetId: string, role: ProfileRole) {
+    setError(null);
+    try {
+      await adminSetRole(targetId, role);
+      // changing your own role flips isAdmin/canEdit — refresh so the UI follows.
+      if (targetId === userId) await refreshProfile();
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Fehler");
+    }
+  }
+
+  return (
+    <>
+      <h2 className="mb-2 mt-8 font-semibold text-slate-200">
+        Nutzer & Rollen
+      </h2>
+      {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
+      <div className="flex flex-col gap-2">
+        {profiles.map((p) => (
+          <div
+            key={p.id}
+            className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+          >
+            <span className="text-sm text-slate-200">
+              {p.display_name ?? "—"}
+              <span className="ml-2 text-xs text-slate-500">{p.status}</span>
+            </span>
+            <select
+              value={p.role}
+              onChange={(e) => setRole(p.id, e.target.value as ProfileRole)}
+              className="rounded-lg border border-slate-600 bg-slate-950 px-2 py-1 text-sm text-slate-100"
+            >
+              {ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
+        {profiles.length === 0 && (
+          <p className="text-sm text-slate-400">Keine Nutzer.</p>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -275,11 +345,13 @@ function ClassificationRow({
   c,
   riders,
   deadline,
+  canDelete,
   onDone,
 }: {
   c: Classification;
   riders: Rider[];
   deadline: string | null;
+  canDelete: boolean;
   onDone: () => void;
 }) {
   const [picks, setPicks] = useState<Record<number, string>>({});
@@ -359,9 +431,11 @@ function ClassificationRow({
           >
             {c.is_open ? "offen" : "geschlossen"}
           </button>
-          <button onClick={remove} className="text-xs text-red-400">
-            löschen
-          </button>
+          {canDelete && (
+            <button onClick={remove} className="text-xs text-red-400">
+              löschen
+            </button>
+          )}
         </div>
       </div>
 

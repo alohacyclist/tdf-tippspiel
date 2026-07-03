@@ -16,7 +16,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
           Tour-Tippspiel
         </span>
         <div className="flex items-center gap-4">
-          {ctx.isAdmin && (
+          {ctx.canEdit && (
             <NavLink
               to="/admin"
               className={({ isActive }) =>

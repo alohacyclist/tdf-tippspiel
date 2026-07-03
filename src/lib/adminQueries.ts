@@ -1,8 +1,9 @@
 import { supabase } from "./supabase";
 
-// All admin writes go through is_admin-gated SECURITY DEFINER RPCs (public schema).
+// All admin writes go through role-gated SECURITY DEFINER RPCs (public schema):
+// content ops require editor-or-admin, deletes + role assignment require admin.
 // The browser never uses the service-role key; a tampered bundle still cannot write
-// because require_admin() re-checks server-side.
+// because the gate re-checks the caller's role server-side.
 async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.rpc(fn, args);
   if (error) throw new Error(error.message);
@@ -160,4 +161,13 @@ export function adminClearQuestionResult(id: string): Promise<void> {
 
 export function adminDeleteQuestion(id: string): Promise<void> {
   return rpc("admin_delete_question", { p_id: id });
+}
+
+// --- Roles (admin only) ---
+
+export function adminSetRole(
+  userId: string,
+  role: "member" | "editor" | "admin",
+): Promise<void> {
+  return rpc("admin_set_role", { p_user_id: userId, p_role: role });
 }
