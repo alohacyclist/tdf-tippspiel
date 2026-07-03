@@ -73,15 +73,18 @@ function CreateQuestion({
   const [attach, setAttach] = useState<"tour" | "stage">("tour");
   const [stageId, setStageId] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [options, setOptions] = useState<string[]>(["", ""]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const cleanOptions = options.map((o) => o.trim()).filter(Boolean);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      await adminCreateQuestion({
+      const id = await adminCreateQuestion({
         tourId,
         kind,
         prompt: prompt.trim(),
@@ -90,10 +93,16 @@ function CreateQuestion({
         stageId: attach === "stage" ? stageId || null : null,
         deadline: attach === "tour" && deadline ? toIso(deadline) : null,
       });
+      if (kind === "choice") {
+        for (let i = 0; i < cleanOptions.length; i++) {
+          await adminAddQuestionOption(id, cleanOptions[i], i);
+        }
+      }
       setPrompt("");
       setHelp("");
       setDeadline("");
       setStageId("");
+      setOptions(["", ""]);
       onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Fehler");
@@ -103,7 +112,9 @@ function CreateQuestion({
   }
 
   const canSubmit =
-    prompt.trim() && (attach === "tour" ? !!deadline : !!stageId);
+    prompt.trim() &&
+    (attach === "tour" ? !!deadline : !!stageId) &&
+    (kind !== "choice" || cleanOptions.length >= 2);
 
   return (
     <form
@@ -182,9 +193,41 @@ function CreateQuestion({
       )}
 
       {kind === "choice" && (
-        <p className="text-xs text-slate-500">
-          Antwortoptionen fügst du nach dem Anlegen unten bei der Frage hinzu.
-        </p>
+        <div className="flex flex-col gap-1">
+          <div className="text-xs text-slate-400">
+            Antwortmöglichkeiten (mind. 2)
+          </div>
+          {options.map((opt, i) => (
+            <div key={i} className="flex gap-2">
+              <input
+                placeholder={`Option ${i + 1}`}
+                value={opt}
+                onChange={(e) =>
+                  setOptions(
+                    options.map((o, j) => (j === i ? e.target.value : o)),
+                  )
+                }
+                className="flex-1 rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+              />
+              {options.length > 2 && (
+                <button
+                  type="button"
+                  onClick={() => setOptions(options.filter((_, j) => j !== i))}
+                  className="rounded-lg border border-slate-700 px-2 text-sm text-red-400"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setOptions([...options, ""])}
+            className="self-start text-xs text-yellow-400"
+          >
+            + Option
+          </button>
+        </div>
       )}
 
       <button
