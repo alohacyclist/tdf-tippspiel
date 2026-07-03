@@ -80,10 +80,10 @@ pnpm build                  # tsc -b && vite build muss grün sein (sonst failt 
 ```
 Nach deinem ersten Login (legt `auth.users`-Eintrag an) im Supabase **SQL Editor**:
 ```sql
--- dich selbst zum Admin + freischalten
-update profiles set is_admin = true, status = 'active'
+-- dich selbst zum Admin + freischalten (role: member | editor | admin)
+update profiles set role = 'admin', status = 'active'
 where id = (select id from auth.users where email = 'DEINE@EMAIL');
--- weitere Spieler freischalten (bis Admin-Panel existiert)
+-- weitere Spieler freischalten; Rollen danach im Admin-UI ("Nutzer & Rollen")
 update profiles set status = 'active'
 where id = (select id from auth.users where email = '…');
 ```
@@ -119,7 +119,7 @@ Sonst failt der Magic-Link in Prod (häufigster Launch-Killer). **Authentication
 
 ## 8 — Abnahme in Prod
 Inkognito → Vercel-URL → E-Mail → Link senden → Mail-Link klickt sich eingeloggt zurück. Erster Login
-= `status = 'pending'` → per SQL (Schritt 4) auf `active`/`is_admin` setzen. Etappen/Tipp/Rangliste
+= `status = 'pending'` → per SQL (Schritt 4) auf `active` (+ `role`) setzen. Etappen/Tipp/Rangliste
 sichtbar → **live**. 🎉
 
 ## Tests (DB, brauchen Docker)
