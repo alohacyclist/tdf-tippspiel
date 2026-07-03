@@ -2,7 +2,7 @@
 -- Verifies flat stage points + GC partial credit (exact vs in-top3) aggregate correctly.
 begin;
 create extension if not exists pgtap;
-select plan(3);
+select plan(4);
 
 -- ids
 -- T tour, A/B players, r1 winner, r2 loser, g1..g3 GC riders, s1 finished stage, c1 GC classification
@@ -60,14 +60,17 @@ insert into stage_tips (tour_id, user_id, stage_id, rider_id) values
    '77777777-7777-7777-7777-777777777777', '33333333-3333-3333-3333-333333333333');
 
 select is(
-  (select total_points from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-  35::numeric, 'A = 10 stage + 25 GC = 35');
+  (select stage_points from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  10::numeric, 'A stage_points = 10 (only the stage winner counts for the rank)');
+select is(
+  (select special_points from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  25::numeric, 'A special_points = 25 GC (separate column, not in the rank)');
 select is(
   (select correct_winners::int from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   1, 'A has 1 correct stage winner');
 select is(
-  (select total_points from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
-  0::numeric, 'B = 0');
+  (select stage_points from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
+  0::numeric, 'B stage_points = 0');
 
 select * from finish();
 rollback;

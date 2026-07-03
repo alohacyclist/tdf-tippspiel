@@ -52,13 +52,13 @@ insert into question_answer (tour_id, user_id, question_id, option_id) values
 
 -- ---- scoring ----
 select is(
-  (select total_points from leaderboard where tour_id = '77771111-0000-0000-0000-000000000001'
+  (select question_points from leaderboard where tour_id = '77771111-0000-0000-0000-000000000001'
      and user_id = 'b2000000-0000-0000-0000-000000000002'),
-  12::numeric, 'B = 5 boolean + 7 choice = 12 (unresolved QU contributes 0)');
+  12::numeric, 'B question_points = 5 boolean + 7 choice = 12 (unresolved QU contributes 0)');
 select is(
-  (select total_points from leaderboard where tour_id = '77771111-0000-0000-0000-000000000001'
+  (select question_points from leaderboard where tour_id = '77771111-0000-0000-0000-000000000001'
      and user_id = 'c3000000-0000-0000-0000-000000000003'),
-  0::numeric, 'C wrong answers = 0');
+  0::numeric, 'C wrong answers = 0 question points');
 
 -- ---- constraints ----
 select throws_ok(

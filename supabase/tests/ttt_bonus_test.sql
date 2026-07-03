@@ -3,7 +3,7 @@
 -- own points (10) rather than the generic jersey points (15).
 begin;
 create extension if not exists pgtap;
-select plan(3);
+select plan(4);
 
 insert into auth.users (id, email) values
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'ttt-c@example.com'),
@@ -49,17 +49,21 @@ insert into classification_tips (tour_id, user_id, classification_id, rider_id, 
    'cccc1111-0000-0000-0000-000000000000', 'aaaa1111-0000-0000-0000-000000000000', 1);
 
 select is(
-  (select total_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
+  (select stage_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
      and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
-  20::numeric, 'C = 10 ttt-team + 10 yellow-bonus = 20 (bonus uses 10 not jersey 15)');
+  10::numeric, 'C stage_points = 10 (ttt team match)');
+select is(
+  (select special_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
+     and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
+  10::numeric, 'C special_points = 10 yellow-bonus (own 10, not jersey 15)');
 select is(
   (select correct_winners::int from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
      and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
   1, 'C has 1 correct stage winner (ttt team match)');
 select is(
-  (select total_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
+  (select stage_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
      and user_id = 'dddddddd-dddd-dddd-dddd-dddddddddddd'),
-  0::numeric, 'D wrong team = 0');
+  0::numeric, 'D wrong team = 0 stage points');
 
 select * from finish();
 rollback;
