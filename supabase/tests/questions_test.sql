@@ -9,7 +9,7 @@ insert into auth.users (id, email) values
   ('a1000000-0000-0000-0000-000000000001', 'q-admin@example.com'),
   ('b2000000-0000-0000-0000-000000000002', 'q-b@example.com'),
   ('c3000000-0000-0000-0000-000000000003', 'q-c@example.com');
-update profiles set status = 'active', is_admin = true, display_name = 'QAdmin'
+update profiles set status = 'active', role = 'admin', display_name = 'QAdmin'
   where id = 'a1000000-0000-0000-0000-000000000001';
 update profiles set status = 'active', display_name = 'QB'
   where id = 'b2000000-0000-0000-0000-000000000002';

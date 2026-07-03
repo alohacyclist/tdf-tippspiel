@@ -9,7 +9,7 @@ select plan(14);
 insert into auth.users (id, email) values
   ('a0000000-0000-0000-0000-000000000001', 'admin-a@example.com'),
   ('b0000000-0000-0000-0000-000000000002', 'member-b@example.com');
-update profiles set status = 'active', is_admin = true, display_name = 'AdminA'
+update profiles set status = 'active', role = 'admin', display_name = 'AdminA'
   where id = 'a0000000-0000-0000-0000-000000000001';
 update profiles set status = 'active', display_name = 'MemberB'
   where id = 'b0000000-0000-0000-0000-000000000002';
