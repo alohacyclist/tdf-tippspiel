@@ -252,7 +252,7 @@ export async function getLeaderboard(
       .from("leaderboard")
       .select("*")
       .eq("tour_id", tourId)
-      .order("total_points", { ascending: false })
+      .order("stage_points", { ascending: false })
       .order("correct_winners", { ascending: false }),
   );
 }

@@ -121,6 +121,8 @@ export interface LeaderboardRow {
   tour_id: string;
   user_id: string;
   display_name: string | null;
-  total_points: number;
   correct_winners: number;
+  stage_points: number;
+  special_points: number;
+  question_points: number;
 }
