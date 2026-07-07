@@ -63,10 +63,10 @@ function ActiveApp({
 }
 
 export default function App() {
-  const { loading, session, profile, refreshProfile } = useAuth();
+  const { loading, session, profile, expired, refreshProfile } = useAuth();
 
   if (loading) return <Center>Laden…</Center>;
-  if (!session) return <Login />;
+  if (!session) return <Login expired={expired} />;
   if (!profile) return <Center>Laden…</Center>;
   if (!profile.display_name) return <Onboarding onDone={refreshProfile} />;
   if (profile.status === "blocked") return <Center>Account gesperrt.</Center>;

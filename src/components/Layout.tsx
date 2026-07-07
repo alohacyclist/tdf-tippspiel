@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { signOut } from "../lib/supabase";
 import type { AppCtx } from "../lib/appContext";
 
 const tabs = [
@@ -36,7 +36,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
           </NavLink>
           <button
             className="text-sm text-slate-400 hover:text-slate-200"
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => signOut()}
           >
             Abmelden
           </button>
