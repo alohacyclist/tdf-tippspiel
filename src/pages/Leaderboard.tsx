@@ -3,18 +3,34 @@ import { useNavigate } from "react-router-dom";
 import { useApp } from "../lib/appContext";
 import { getLeaderboard } from "../lib/queries";
 import type { LeaderboardRow } from "../lib/types";
+import { Confetti } from "../components/Confetti";
+
+const CONFETTI_KEY = "tdf-confetti-shown";
 
 export function Leaderboard() {
   const { tour } = useApp();
   const navigate = useNavigate();
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [celebrate, setCelebrate] = useState(false);
 
   useEffect(() => {
     getLeaderboard(tour.id)
       .then(setRows)
       .catch((e) => setError(e.message));
   }, [tour.id]);
+
+  // Fire confetti only on the first Rangliste visit of this browser session.
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem(CONFETTI_KEY)) {
+        sessionStorage.setItem(CONFETTI_KEY, "1");
+        setCelebrate(true);
+      }
+    } catch {
+      setCelebrate(true);
+    }
+  }, []);
 
   if (error) return <p className="py-4 text-red-400">{error}</p>;
 
@@ -24,6 +40,7 @@ export function Leaderboard() {
 
   return (
     <div className="py-3">
+      {celebrate && <Confetti />}
       <h1 className="mb-1 text-xl font-bold text-slate-100">Rangliste</h1>
       <p className="mb-3 text-xs text-slate-500">
         Rang nach Etappen-Punkten. Sonderwertungen und Fragen zählen separat.
