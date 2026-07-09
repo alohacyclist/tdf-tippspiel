@@ -1,24 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "../lib/appContext";
-import { listPlayerStageTips, listStages } from "../lib/queries";
+import {
+  listPlayerStageTips,
+  listRiders,
+  listStages,
+  type PlayerStageTip,
+} from "../lib/queries";
 import type { Stage } from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
+import {
+  stageHasResult,
+  stageWinnerLabel,
+  stageWinnerMatch,
+} from "../lib/stageResult";
 import { Countdown } from "../components/Countdown";
 
 export function Stages() {
   const { tour, userId } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
-  const [tips, setTips] = useState<Map<string, string>>(new Map());
+  const [tips, setTips] = useState<Map<string, PlayerStageTip>>(new Map());
+  const [riderName, setRiderName] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([listStages(tour.id), listPlayerStageTips(tour.id, userId)])
-      .then(([s, ts]) => {
+    Promise.all([
+      listStages(tour.id),
+      listPlayerStageTips(tour.id, userId),
+      listRiders(tour.id),
+    ])
+      .then(([s, ts, rs]) => {
         setStages(s);
-        setTips(
-          new Map(ts.map((t) => [t.stage_id, t.team ?? t.rider?.name ?? "—"])),
-        );
+        setTips(new Map(ts.map((t) => [t.stage_id, t])));
+        setRiderName(new Map(rs.map((r) => [r.id, r.name])));
       })
       .catch((e) => setError(e.message));
   }, [tour.id, userId]);
@@ -29,6 +43,21 @@ export function Stages() {
     <ul className="flex flex-col gap-2 py-2">
       {stages.map((s) => {
         const started = isPast(s.start_time);
+        const tip = tips.get(s.id);
+        const resolved = stageHasResult(s);
+        const tipLabel = tip
+          ? (tip.team ?? tip.rider?.name ?? "—")
+          : "kein Tipp";
+        const correct = tip ? stageWinnerMatch(s, tip) : false;
+        const tipColor = resolved
+          ? correct
+            ? "text-green-400"
+            : tip
+              ? "text-red-400"
+              : "text-slate-500"
+          : tip
+            ? "text-slate-300"
+            : "text-slate-500";
         return (
           <li key={s.id}>
             <Link
@@ -64,13 +93,12 @@ export function Stages() {
                     <Countdown iso={s.start_time} />
                   </span>
                 )}
-                <div
-                  className={
-                    tips.has(s.id) ? "text-green-400" : "text-slate-500"
-                  }
-                >
-                  {tips.get(s.id) ?? "kein Tipp"}
-                </div>
+                {resolved && (
+                  <div className="text-slate-400">
+                    🏁 {stageWinnerLabel(s, riderName)}
+                  </div>
+                )}
+                <div className={tipColor}>{tipLabel}</div>
               </div>
             </Link>
           </li>

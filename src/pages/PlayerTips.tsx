@@ -12,12 +12,7 @@ import {
 } from "../lib/queries";
 import type { Classification, Stage } from "../lib/types";
 import { isPast } from "../lib/time";
-
-function stageWinnerMatch(stage: Stage, tip: PlayerStageTip): boolean {
-  if (stage.type === "ttt")
-    return stage.winner_team != null && tip.team === stage.winner_team;
-  return stage.winner_rider_id != null && stage.winner_rider_id === tip.rider_id;
-}
+import { stageWinnerMatch } from "../lib/stageResult";
 
 export function PlayerTips() {
   const { userId: playerId } = useParams();
