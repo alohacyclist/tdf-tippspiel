@@ -85,6 +85,20 @@ export function adminSetStageResult(a: {
   });
 }
 
+export function adminSetStageTip(a: {
+  userId: string;
+  stageId: string;
+  riderId?: string | null;
+  team?: string | null;
+}): Promise<void> {
+  return rpc("admin_set_stage_tip", {
+    p_user_id: a.userId,
+    p_stage_id: a.stageId,
+    p_rider_id: a.riderId ?? null,
+    p_team: a.team ?? null,
+  });
+}
+
 // --- Free-form questions (Phase 2) ---
 
 export function adminCreateQuestion(a: {

@@ -17,6 +17,7 @@ import {
   adminSetClassificationResults,
   adminSetRole,
   adminSetStageResult,
+  adminSetStageTip,
 } from "../lib/adminQueries";
 import type { Classification, ProfileRole, Rider, Stage } from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
@@ -115,8 +116,147 @@ export function Admin() {
         onDone={reload}
       />
 
+      {isAdmin && (
+        <StageTipBackfill
+          profiles={profiles}
+          stages={stages}
+          riders={riders}
+          onDone={reload}
+        />
+      )}
+
       {isAdmin && <UsersSection profiles={profiles} onDone={reload} />}
     </div>
+  );
+}
+
+function StageTipBackfill({
+  profiles,
+  stages,
+  riders,
+  onDone,
+}: {
+  profiles: AdminProfile[];
+  stages: Stage[];
+  riders: Rider[];
+  onDone: () => void;
+}) {
+  const [userId, setUserId] = useState("");
+  const [stageId, setStageId] = useState("");
+  const [rider, setRider] = useState<string | null>(null);
+  const [team, setTeam] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  const players = useMemo(
+    () => profiles.filter((p) => p.status === "active"),
+    [profiles],
+  );
+  const stage = stages.find((s) => s.id === stageId) ?? null;
+  const isTtt = stage?.type === "ttt";
+  // full roster (not just active) so a past-stage tip on a since-abandoned rider works.
+  const teams = useMemo(
+    () =>
+      [
+        ...new Set(riders.map((r) => r.team).filter((t): t is string => !!t)),
+      ].sort(),
+    [riders],
+  );
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setSaved(false);
+    try {
+      await adminSetStageTip({
+        userId,
+        stageId,
+        riderId: isTtt ? null : rider,
+        team: isTtt ? team : null,
+      });
+      setRider(null);
+      setTeam("");
+      setSaved(true);
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Fehler");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const canSubmit = userId && stageId && (isTtt ? !!team : !!rider);
+
+  return (
+    <form
+      onSubmit={submit}
+      className="mt-8 flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-4"
+    >
+      <h2 className="font-semibold text-slate-200">
+        Etappensieger-Tipp nachtragen
+      </h2>
+      <p className="text-xs text-slate-500">
+        Trägt einen Tipp für einen Spieler ein — auch nach Deadline.
+      </p>
+      <select
+        value={userId}
+        onChange={(e) => setUserId(e.target.value)}
+        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+      >
+        <option value="">Spieler wählen…</option>
+        {players.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.display_name ?? "—"}
+          </option>
+        ))}
+      </select>
+      <select
+        value={stageId}
+        onChange={(e) => {
+          setStageId(e.target.value);
+          setRider(null);
+          setTeam("");
+          setSaved(false);
+        }}
+        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+      >
+        <option value="">Etappe wählen…</option>
+        {stages.map((s) => (
+          <option key={s.id} value={s.id}>
+            Etappe {s.number} · {formatLocal(s.start_time)}
+          </option>
+        ))}
+      </select>
+
+      {stage &&
+        (isTtt ? (
+          <select
+            value={team}
+            onChange={(e) => setTeam(e.target.value)}
+            className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          >
+            <option value="">Mannschaft…</option>
+            {teams.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <RiderCombobox riders={riders} value={rider} onSelect={setRider} />
+        ))}
+
+      <button
+        disabled={busy || !canSubmit}
+        className="rounded-lg bg-yellow-400 px-3 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50"
+      >
+        Tipp speichern
+      </button>
+      {saved && <p className="text-sm text-green-400">Gespeichert.</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
+    </form>
   );
 }
 
