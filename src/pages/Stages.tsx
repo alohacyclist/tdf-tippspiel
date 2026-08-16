@@ -71,7 +71,7 @@ export function Stages() {
                     ? ` · ${s.start_city} → ${s.finish_city}`
                     : ""}
                   {s.type === "ttt" && (
-                    <span className="ml-2 rounded bg-yellow-400/20 px-1.5 py-0.5 text-xs font-medium text-yellow-400">
+                    <span className="ml-2 rounded bg-accent/20 px-1.5 py-0.5 text-xs font-medium text-accent">
                       MZF
                     </span>
                   )}
@@ -89,7 +89,7 @@ export function Stages() {
                 {started ? (
                   <span className="text-slate-500">gestartet</span>
                 ) : (
-                  <span className="text-yellow-400">
+                  <span className="text-accent">
                     <Countdown iso={s.start_time} />
                   </span>
                 )}

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const COLORS = ["#facc15", "#fde047", "#eab308", "#fbbf24", "#fef08a"];
+const DEFAULT_COLORS = ["#facc15", "#fde047", "#eab308", "#fbbf24", "#fef08a"];
 const COUNT = 140;
 const GRAVITY = 0.15;
 const DRAG = 0.995;
@@ -16,10 +16,11 @@ interface Particle {
   spin: number;
 }
 
-// Self-contained yellow confetti: rains once from the top, then unhooks itself.
-// No dependency, no persistent DOM — a single canvas that clears when particles
-// leave the viewport. Skipped entirely under prefers-reduced-motion.
-export function Confetti() {
+// Self-contained confetti: rains once from the top, then unhooks itself. No
+// dependency, no persistent DOM — a single canvas that clears when particles
+// leave the viewport. Colours default to the TdF yellow; pass a per-tour palette.
+// Skipped entirely under prefers-reduced-motion.
+export function Confetti({ colors = DEFAULT_COLORS }: { colors?: string[] }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export function Confetti() {
       vx: rand(-1.5, 1.5),
       vy: rand(2, 5),
       size: rand(5, 11),
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      color: colors[Math.floor(Math.random() * colors.length)],
       angle: rand(0, Math.PI * 2),
       spin: rand(-0.2, 0.2),
     }));
@@ -85,7 +86,7 @@ export function Confetti() {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
     };
-  }, []);
+  }, [colors]);
 
   return (
     <canvas

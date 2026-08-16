@@ -23,13 +23,14 @@ function unwrap<T>(res: {
   return res.data as T;
 }
 
-export async function getActiveTour(): Promise<Tour | null> {
+// All tours, newest first. The app picks the selected/active one; multiple rows
+// are expected once past tours are archived (Tour-Switcher).
+export async function listTours(): Promise<Tour[]> {
   return unwrap(
     await supabase
       .from("tours")
       .select("*")
-      .eq("is_active", true)
-      .maybeSingle(),
+      .order("year", { ascending: false }),
   );
 }
 

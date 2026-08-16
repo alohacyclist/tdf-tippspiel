@@ -28,7 +28,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="mx-auto flex min-h-full max-w-sm flex-col justify-center px-6">
-      <h1 className="mb-4 text-xl font-bold text-yellow-400">Anzeigename wählen</h1>
+      <h1 className="mb-4 text-xl font-bold text-accent">Anzeigename wählen</h1>
       <form onSubmit={submit} className="flex flex-col gap-3">
         <input
           required
@@ -37,11 +37,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           placeholder="z.B. Bergziege"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-yellow-400"
+          className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent"
         />
         <button
           disabled={busy}
-          className="rounded-lg bg-yellow-400 px-3 py-2 font-semibold text-slate-900 disabled:opacity-50"
+          className="rounded-lg bg-accent px-3 py-2 font-semibold text-accent-contrast disabled:opacity-50"
         >
           Weiter
         </button>

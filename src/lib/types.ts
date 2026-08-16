@@ -13,6 +13,7 @@ export interface Tour {
   year: number;
   name: string;
   is_active: boolean;
+  pcs_slug: string;
 }
 
 export type StageType = "flat" | "hilly" | "mountain" | "itt" | "ttt";

@@ -250,7 +250,7 @@ function StageTipBackfill({
 
       <button
         disabled={busy || !canSubmit}
-        className="rounded-lg bg-yellow-400 px-3 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50"
+        className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-contrast disabled:opacity-50"
       >
         Tipp speichern
       </button>
@@ -386,13 +386,13 @@ function CreateClassification({
           placeholder="key (z.B. sprint_10)"
           value={key}
           onChange={(e) => setKey(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-yellow-400"
+          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
         />
         <input
           placeholder="Name (Anzeige)"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-yellow-400"
+          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
         />
         <select
           value={type}
@@ -472,7 +472,7 @@ function CreateClassification({
 
       <button
         disabled={busy || !canSubmit}
-        className="mt-1 rounded-lg bg-yellow-400 px-3 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50"
+        className="mt-1 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-contrast disabled:opacity-50"
       >
         Anlegen
       </button>
@@ -603,7 +603,7 @@ function ClassificationRow({
           <button
             onClick={saveResults}
             disabled={busy}
-            className="rounded-lg bg-yellow-400 px-3 py-1.5 text-sm font-semibold text-slate-900 disabled:opacity-50"
+            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-accent-contrast disabled:opacity-50"
           >
             Ergebnis speichern
           </button>
@@ -714,7 +714,7 @@ function StageResult({
       </label>
       <button
         disabled={busy || !canSubmit}
-        className="rounded-lg bg-yellow-400 px-3 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50"
+        className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-contrast disabled:opacity-50"
       >
         Speichern
       </button>

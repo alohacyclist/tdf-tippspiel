@@ -88,11 +88,11 @@ export function Profil() {
             setSaved(false);
           }}
           disabled={!loaded}
-          className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-yellow-400 disabled:opacity-50"
+          className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent disabled:opacity-50"
         />
         <button
           disabled={busy || !dirty}
-          className="rounded-lg bg-yellow-400 px-3 py-2 font-semibold text-slate-900 disabled:opacity-50"
+          className="rounded-lg bg-accent px-3 py-2 font-semibold text-accent-contrast disabled:opacity-50"
         >
           {saved ? "Gespeichert ✓" : "Speichern"}
         </button>

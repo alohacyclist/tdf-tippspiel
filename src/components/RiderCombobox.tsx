@@ -34,7 +34,7 @@ export function RiderCombobox({ riders, value, onSelect, disabled, exclude }: Pr
   return (
     <div className="relative">
       <input
-        className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-yellow-400"
+        className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent"
         placeholder={selected ? riderLabel(selected) : 'Fahrer suchen…'}
         value={query}
         onFocus={() => setOpen(true)}

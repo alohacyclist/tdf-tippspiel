@@ -177,14 +177,14 @@ export function StageDetail() {
         </Link>
         <div className="flex gap-3 text-sm">
           {prev ? (
-            <Link to={`/stage/${prev.id}`} className="text-yellow-400">
+            <Link to={`/stage/${prev.id}`} className="text-accent">
               ← Etappe {prev.number}
             </Link>
           ) : (
             <span className="text-slate-600">← Etappe</span>
           )}
           {next ? (
-            <Link to={`/stage/${next.id}`} className="text-yellow-400">
+            <Link to={`/stage/${next.id}`} className="text-accent">
               Etappe {next.number} →
             </Link>
           ) : (
@@ -198,7 +198,7 @@ export function StageDetail() {
           ? ` · ${stage.start_city} → ${stage.finish_city}`
           : ""}
         {isTtt && (
-          <span className="ml-2 text-sm font-normal text-yellow-400">
+          <span className="ml-2 text-sm font-normal text-accent">
             Mannschaftszeitfahren
           </span>
         )}
@@ -217,7 +217,11 @@ export function StageDetail() {
         {stage.distance_km != null && <span>{stage.distance_km} km</span>}
       </div>
 
-      <StageProfile stageNumber={stage.number} year={tour.year} />
+      <StageProfile
+        raceSlug={tour.pcs_slug}
+        stageNumber={stage.number}
+        year={tour.year}
+      />
 
       {!started ? (
         <div className="mt-5">
@@ -235,7 +239,7 @@ export function StageDetail() {
             <select
               value={teamPick ?? ""}
               onChange={(e) => setTeamPick(e.target.value || null)}
-              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-yellow-400"
+              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent"
             >
               <option value="">Mannschaft wählen…</option>
               {teams.map((t) => (
@@ -254,7 +258,7 @@ export function StageDetail() {
           <button
             onClick={save}
             disabled={!canSave}
-            className="mt-3 w-full rounded-lg bg-yellow-400 px-3 py-2 font-semibold text-slate-900 disabled:opacity-50"
+            className="mt-3 w-full rounded-lg bg-accent px-3 py-2 font-semibold text-accent-contrast disabled:opacity-50"
           >
             {saved ? "Gespeichert ✓" : "Tipp speichern"}
           </button>
@@ -268,10 +272,10 @@ export function StageDetail() {
             Tipps & Ergebnis
           </h2>
           <a
-            href={pcsStageUrl(tour.year, stage.number)}
+            href={pcsStageUrl(tour.pcs_slug, tour.year, stage.number)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mb-3 inline-block text-sm text-yellow-400"
+            className="mb-3 inline-block text-sm text-accent"
           >
             Vollständiges Ergebnis auf procyclingstats ↗
           </a>

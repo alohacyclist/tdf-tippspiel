@@ -1,6 +1,18 @@
 @import "tailwindcss";
 
-:root { color-scheme: light dark; }
+/* Accent utilities (text-accent, bg-accent, border-accent, bg-accent/20 …)
+   resolve to per-tour CSS vars set by the app; defaults below keep pre-auth
+   screens (Login) on the Tour-de-France yellow. */
+@theme {
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
+}
+
+:root {
+  color-scheme: light dark;
+  --accent: #facc15;
+  --accent-contrast: #0f172a;
+}
 
 html, body, #root { height: 100%; }
 body {

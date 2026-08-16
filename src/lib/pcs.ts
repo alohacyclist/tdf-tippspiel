@@ -1,11 +1,14 @@
-const PCS_RACE_SLUG = "tour-de-france";
-
-// PCS-Etappenseite (Ergebnis, Profil, Details). Aus Jahr + Etappennummer konstruierbar.
-export function pcsStageUrl(year: number, stageNumber: number): string {
-  return `https://www.procyclingstats.com/race/${PCS_RACE_SLUG}/${year}/stage-${stageNumber}`;
+// PCS-Etappenseite (Ergebnis, Profil, Details). Aus Race-Slug + Jahr + Nummer.
+export function pcsStageUrl(
+  raceSlug: string,
+  year: number,
+  stageNumber: number,
+): string {
+  return `https://www.procyclingstats.com/race/${raceSlug}/${year}/stage-${stageNumber}`;
 }
 
-// Lokales Höhenprofil-Asset. Bilder liegen unter public/stage-profiles/stage-{n}.jpg.
-export function stageProfileSrc(stageNumber: number): string {
-  return `/stage-profiles/stage-${stageNumber}.jpg`;
+// Lokales Höhenprofil-Asset, pro Tour-Ordner (zwei Grand Tours teilen sich ein
+// Jahr, daher nach Race-Slug getrennt): public/stage-profiles/<slug>/stage-{n}.jpg.
+export function stageProfileSrc(raceSlug: string, stageNumber: number): string {
+  return `/stage-profiles/${raceSlug}/stage-${stageNumber}.jpg`;
 }

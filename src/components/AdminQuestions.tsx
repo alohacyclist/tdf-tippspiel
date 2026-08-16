@@ -146,7 +146,7 @@ function CreateQuestion({
         placeholder="Frage (Anzeige)"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-yellow-400"
+        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
       />
       <input
         placeholder="Hilfetext (optional)"
@@ -226,7 +226,7 @@ function CreateQuestion({
           <button
             type="button"
             onClick={() => setOptions([...options, ""])}
-            className="self-start text-xs text-yellow-400"
+            className="self-start text-xs text-accent"
           >
             + Option
           </button>
@@ -235,7 +235,7 @@ function CreateQuestion({
 
       <button
         disabled={busy || !canSubmit}
-        className="mt-1 rounded-lg bg-yellow-400 px-3 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50"
+        className="mt-1 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-contrast disabled:opacity-50"
       >
         Anlegen
       </button>

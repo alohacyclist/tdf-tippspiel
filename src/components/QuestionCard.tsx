@@ -133,7 +133,7 @@ export function QuestionCard({
                 onClick={() => saveBool(v)}
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm ${
                   boolValue === v
-                    ? "border-yellow-400 bg-yellow-400/10 text-yellow-300"
+                    ? "border-accent bg-accent/10 text-accent"
                     : "border-slate-700 text-slate-200"
                 }`}
               >
@@ -149,7 +149,7 @@ export function QuestionCard({
                 onClick={() => saveOption(o.id)}
                 className={`rounded-lg border px-3 py-2 text-left text-sm ${
                   optionId === o.id
-                    ? "border-yellow-400 bg-yellow-400/10 text-yellow-300"
+                    ? "border-accent bg-accent/10 text-accent"
                     : "border-slate-700 text-slate-200"
                 }`}
               >

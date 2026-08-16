@@ -3,6 +3,8 @@ import type { Tour } from "./types";
 
 export interface AppCtx {
   tour: Tour;
+  tours: Tour[];
+  setTour: (tourId: string) => void;
   userId: string;
   isAdmin: boolean;
   canEdit: boolean;

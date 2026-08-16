@@ -9,10 +9,10 @@ import {
 } from "../lib/queries";
 import type { LeaderboardRow, Stage } from "../lib/types";
 import { stageHasResult } from "../lib/stageResult";
+import { tourTheme } from "../lib/theme";
 import { Confetti } from "../components/Confetti";
 import { PlayerStageBreakdown } from "../components/PlayerStageBreakdown";
 
-const CONFETTI_KEY = "tdf-confetti-shown";
 const COLS = 6;
 
 export function Leaderboard() {
@@ -42,17 +42,20 @@ export function Leaderboard() {
       .catch((e) => setError(e.message));
   }, [tour.id]);
 
-  // Fire confetti only on the first Rangliste visit of this browser session.
+  // Fire confetti on the first Rangliste visit per tour per browser session.
   useEffect(() => {
+    const key = `grandtour-confetti:${tour.id}`;
     try {
-      if (!sessionStorage.getItem(CONFETTI_KEY)) {
-        sessionStorage.setItem(CONFETTI_KEY, "1");
-        setCelebrate(true);
+      if (sessionStorage.getItem(key)) {
+        setCelebrate(false);
+        return;
       }
+      sessionStorage.setItem(key, "1");
+      setCelebrate(true);
     } catch {
       setCelebrate(true);
     }
-  }, []);
+  }, [tour.id]);
 
   const resolvedStages = useMemo(() => stages.filter(stageHasResult), [stages]);
 
@@ -78,7 +81,7 @@ export function Leaderboard() {
 
   return (
     <div className="py-3">
-      {celebrate && <Confetti />}
+      {celebrate && <Confetti colors={tourTheme(tour.pcs_slug).confetti} />}
       <h1 className="mb-1 text-xl font-bold text-slate-100">Rangliste</h1>
       <p className="mb-3 text-xs text-slate-500">
         Rang nach Etappen-Punkten. Zeile antippen für die Etappen-Tipps.
@@ -119,7 +122,7 @@ export function Leaderboard() {
                         <span className="ml-1">🍺</span>
                       )}
                     </td>
-                    <td className="py-2 pl-2 text-right font-semibold text-yellow-400">
+                    <td className="py-2 pl-2 text-right font-semibold text-accent">
                       {r.stage_points}
                     </td>
                     <td className="py-2 pl-2 text-right text-slate-400">

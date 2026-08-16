@@ -22,8 +22,8 @@ export function Login({ expired = false }: { expired?: boolean }) {
 
   return (
     <div className="mx-auto flex min-h-full max-w-sm flex-col justify-center px-6">
-      <h1 className="mb-1 text-2xl font-bold text-yellow-400">
-        Tour-Tippspiel
+      <h1 className="mb-1 text-2xl font-bold text-accent">
+        Grand-Tour-Tippspiel
       </h1>
       <p className="mb-6 text-slate-400">Anmelden per Magic-Link.</p>
 
@@ -46,11 +46,11 @@ export function Login({ expired = false }: { expired?: boolean }) {
             placeholder="deine@email.de"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-yellow-400"
+            className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent"
           />
           <button
             disabled={busy}
-            className="rounded-lg bg-yellow-400 px-3 py-2 font-semibold text-slate-900 disabled:opacity-50"
+            className="rounded-lg bg-accent px-3 py-2 font-semibold text-accent-contrast disabled:opacity-50"
           >
             {busy ? "…" : "Link senden"}
           </button>
