@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "../lib/appContext";
 import {
-  listPlayerStageTips,
+  listMyStageTips,
   listRiders,
   listStages,
-  type PlayerStageTip,
+  type MyStageTip,
 } from "../lib/queries";
 import type { Stage } from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
@@ -19,14 +19,14 @@ import { Countdown } from "../components/Countdown";
 export function Stages() {
   const { tour, userId } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
-  const [tips, setTips] = useState<Map<string, PlayerStageTip>>(new Map());
+  const [tips, setTips] = useState<Map<string, MyStageTip>>(new Map());
   const [riderName, setRiderName] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
       listStages(tour.id),
-      listPlayerStageTips(tour.id, userId),
+      listMyStageTips(userId),
       listRiders(tour.id),
     ])
       .then(([s, ts, rs]) => {
@@ -46,7 +46,7 @@ export function Stages() {
         const tip = tips.get(s.id);
         const resolved = stageHasResult(s);
         const tipLabel = tip
-          ? (tip.team ?? tip.rider?.name ?? "—")
+          ? (tip.team ?? riderName.get(tip.rider_id ?? "") ?? "—")
           : "kein Tipp";
         const correct = tip ? stageWinnerMatch(s, tip) : false;
         const tipColor = resolved

@@ -225,6 +225,24 @@ export async function listPlayerStageTips(
   );
 }
 
+export interface MyStageTip {
+  stage_id: string;
+  rider_id: string | null;
+  team: string | null;
+}
+
+// Own tips only, across the whole tour — no tour_id filter and no rider embed,
+// mirroring getMyStageTip (the stage-detail path). The Stages overview resolves
+// rider names from its own riders list, so it stays in sync with the detail view.
+export async function listMyStageTips(userId: string): Promise<MyStageTip[]> {
+  return unwrap(
+    await supabase
+      .from("stage_tips")
+      .select("stage_id, rider_id, team")
+      .eq("user_id", userId),
+  );
+}
+
 export interface PlayerClsTip {
   classification_id: string;
   slot: number;
