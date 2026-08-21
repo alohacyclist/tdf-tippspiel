@@ -31,11 +31,17 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
               {ctx.tour.name}
             </span>
           )}
-          {!ctx.tour.is_active && (
-            <span className="shrink-0 rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-medium uppercase text-slate-300">
-              Archiv
-            </span>
-          )}
+          {!ctx.tour.is_active &&
+            (() => {
+              const upcoming =
+                !!ctx.tour.starts_at &&
+                Date.parse(ctx.tour.starts_at) > Date.now();
+              return (
+                <span className="shrink-0 rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-medium uppercase text-slate-300">
+                  {upcoming ? "Vorschau" : "Archiv"}
+                </span>
+              );
+            })()}
         </div>
         <div className="flex items-center gap-4">
           {ctx.canEdit && (

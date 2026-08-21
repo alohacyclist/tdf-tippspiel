@@ -24,14 +24,24 @@ function unwrap<T>(res: {
 }
 
 // All tours, newest first. The app picks the selected/active one; multiple rows
-// are expected once past tours are archived (Tour-Switcher).
+// are expected once past tours are archived (Tour-Switcher). Derives starts_at
+// (earliest stage start) so the UI can tell an upcoming tour from an archived one.
 export async function listTours(): Promise<Tour[]> {
-  return unwrap(
+  const rows = unwrap<
+    Array<Tour & { stages: { start_time: string | null }[] }>
+  >(
     await supabase
       .from("tours")
-      .select("*")
+      .select("*, stages(start_time)")
       .order("year", { ascending: false }),
   );
+  return rows.map(({ stages, ...t }) => {
+    const times = stages
+      .map((s) => s.start_time)
+      .filter((s): s is string => !!s)
+      .sort();
+    return { ...t, starts_at: times[0] ?? null };
+  });
 }
 
 export async function listStages(tourId: string): Promise<Stage[]> {
