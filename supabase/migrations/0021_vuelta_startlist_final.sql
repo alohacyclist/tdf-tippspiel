@@ -1,0 +1,233 @@
+-- 0021_vuelta_startlist_final.sql — official 184-rider Vuelta a España 2026 startlist
+-- (full 8-rider rosters, 23 teams). Supersedes the provisional 94 of 0020:
+--   * upsert all 184 (reactivate + correct team/name/country),
+--   * deactivate the 15 provisional riders who did not make the final field.
+-- Nationalities added by hand (PCS list has none). Idempotent.
+insert into riders (tour_id, pcs_slug, name, team, country)
+select t.id, v.slug, v.name, v.team, v.country
+from tours t
+cross join (values
+  -- Red Bull - BORA - hansgrohe
+  ('primoz-roglic',                'Primoz Roglic',                'Red Bull - BORA - hansgrohe',      'SI'),
+  ('finn-fisher-black',            'Finn Fisher-Black',            'Red Bull - BORA - hansgrohe',      'NZ'),
+  ('jordi-meeus',                  'Jordi Meeus',                  'Red Bull - BORA - hansgrohe',      'BE'),
+  ('gianni-moscon',                'Gianni Moscon',                'Red Bull - BORA - hansgrohe',      'IT'),
+  ('callum-thornley',              'Callum Thornley',              'Red Bull - BORA - hansgrohe',      'GB'),
+  ('luke-tuckwell',                'Luke Tuckwell',                'Red Bull - BORA - hansgrohe',      'GB'),
+  ('gianni-vermeersch',            'Gianni Vermeersch',            'Red Bull - BORA - hansgrohe',      'BE'),
+  ('frederik-wandahl',             'Frederik Wandahl',             'Red Bull - BORA - hansgrohe',      'DK'),
+  -- UAE Team Emirates - XRG
+  ('tadej-pogacar',                'Tadej Pogacar',                'UAE Team Emirates - XRG',          'SI'),
+  ('joao-almeida',                 'Joao Almeida',                 'UAE Team Emirates - XRG',          'PT'),
+  ('domen-novak',                  'Domen Novak',                  'UAE Team Emirates - XRG',          'SI'),
+  ('ivo-oliveira',                 'Ivo Oliveira',                 'UAE Team Emirates - XRG',          'PT'),
+  ('pavel-sivakov',                'Pavel Sivakov',                'UAE Team Emirates - XRG',          'FR'),
+  ('pablo-torres',                 'Pablo Torres',                 'UAE Team Emirates - XRG',          'ES'),
+  ('kevin-vermaerke',              'Kevin Vermaerke',              'UAE Team Emirates - XRG',          'US'),
+  ('jay-vine',                     'Jay Vine',                     'UAE Team Emirates - XRG',          'AU'),
+  -- Movistar Team
+  ('enric-mas',                    'Enric Mas',                    'Movistar Team',                    'ES'),
+  ('jorge-arcas',                  'Jorge Arcas',                  'Movistar Team',                    'ES'),
+  ('orluis-aular',                 'Orluis Aular',                 'Movistar Team',                    'VE'),
+  ('carlos-canal',                 'Carlos Canal',                 'Movistar Team',                    'ES'),
+  ('pablo-castrillo',              'Pablo Castrillo',              'Movistar Team',                    'ES'),
+  ('raul-garcia-pierna',           'Raul Garcia Pierna',           'Movistar Team',                    'ES'),
+  ('ivan-romeo',                   'Ivan Romeo',                   'Movistar Team',                    'ES'),
+  ('cian-uijtdebroeks',            'Cian Uijtdebroeks',            'Movistar Team',                    'BE'),
+  -- Team Visma - Lease a Bike
+  ('wout-van-aert',                'Wout van Aert',                'Team Visma - Lease a Bike',        'BE'),
+  ('bruno-armirail',               'Bruno Armirail',               'Team Visma - Lease a Bike',        'FR'),
+  ('matthew-brennan',              'Matthew Brennan',              'Team Visma - Lease a Bike',        'GB'),
+  ('steven-kruijswijk',            'Steven Kruijswijk',            'Team Visma - Lease a Bike',        'NL'),
+  ('sepp-kuss',                    'Sepp Kuss',                    'Team Visma - Lease a Bike',        'US'),
+  ('christophe-laporte',           'Christophe Laporte',           'Team Visma - Lease a Bike',        'FR'),
+  ('jorgen-nordhagen',             'Jorgen Nordhagen',             'Team Visma - Lease a Bike',        'NO'),
+  ('ben-tulett',                   'Ben Tulett',                   'Team Visma - Lease a Bike',        'GB'),
+  -- Decathlon CMA CGM Team
+  ('felix-gall',                   'Felix Gall',                   'Decathlon CMA CGM Team',           'AT'),
+  ('leo-bisiaux',                  'Leo Bisiaux',                  'Decathlon CMA CGM Team',           'FR'),
+  ('oscar-chamberlain',            'Oscar Chamberlain',            'Decathlon CMA CGM Team',           'AU'),
+  ('sander-de-pestel',             'Sander de Pestel',             'Decathlon CMA CGM Team',           'BE'),
+  ('jordan-labrosse',              'Jordan Labrosse',              'Decathlon CMA CGM Team',           'FR'),
+  ('gregor-muhlberger',            'Gregor Muhlberger',            'Decathlon CMA CGM Team',           'AT'),
+  ('matthew-riccitello',           'Matthew Riccitello',           'Decathlon CMA CGM Team',           'US'),
+  ('callum-scotson',               'Callum Scotson',               'Decathlon CMA CGM Team',           'AU'),
+  -- Pinarello Q36.5 Pro Cycling Team
+  ('david-de-la-cruz',             'David de la Cruz',             'Pinarello Q36.5 Pro Cycling Team', 'ES'),
+  ('xabier-mikel-azparren',        'Xabier Mikel Azparren',        'Pinarello Q36.5 Pro Cycling Team', 'ES'),
+  ('walter-calzoni',               'Walter Calzoni',               'Pinarello Q36.5 Pro Cycling Team', 'IT'),
+  ('marcel-camprubi',              'Marcel Camprubi',              'Pinarello Q36.5 Pro Cycling Team', 'ES'),
+  ('eddie-dunbar',                 'Eddie Dunbar',                 'Pinarello Q36.5 Pro Cycling Team', 'IE'),
+  ('thomas-gloag',                 'Thomas Gloag',                 'Pinarello Q36.5 Pro Cycling Team', 'GB'),
+  ('david-gonzalez',               'David Gonzalez',               'Pinarello Q36.5 Pro Cycling Team', 'ES'),
+  ('milan-vader',                  'Milan Vader',                  'Pinarello Q36.5 Pro Cycling Team', 'NL'),
+  -- Netcompany INEOS
+  ('oscar-onley',                  'Oscar Onley',                  'Netcompany INEOS',                 'GB'),
+  ('jack-haig',                    'Jack Haig',                    'Netcompany INEOS',                 'AU'),
+  ('lucas-hamilton',               'Lucas Hamilton',               'Netcompany INEOS',                 'AU'),
+  ('axel-laurance',                'Axel Laurance',                'Netcompany INEOS',                 'FR'),
+  ('carlos-rodriguez',             'Carlos Rodriguez',             'Netcompany INEOS',                 'ES'),
+  ('embret-svestad-bardseng',      'Embret Svestad-Bardseng',      'Netcompany INEOS',                 'NO'),
+  ('joshua-tarling',               'Joshua Tarling',               'Netcompany INEOS',                 'GB'),
+  ('ben-turner',                   'Ben Turner',                   'Netcompany INEOS',                 'GB'),
+  -- Bahrain - Victorious
+  ('pello-bilbao',                 'Pello Bilbao',                 'Bahrain - Victorious',             'ES'),
+  ('santiago-buitrago',            'Santiago Buitrago',            'Bahrain - Victorious',             'CO'),
+  ('roman-ermakov',                'Roman Ermakov',                'Bahrain - Victorious',             'RU'),
+  ('matevz-govekar',               'Matevz Govekar',               'Bahrain - Victorious',             'SI'),
+  ('pau-miquel',                   'Pau Miquel',                   'Bahrain - Victorious',             'ES'),
+  ('jakob-omrzel',                 'Jakob Omrzel',                 'Bahrain - Victorious',             'SI'),
+  ('mathijs-paasschens',           'Mathijs Paasschens',           'Bahrain - Victorious',             'NL'),
+  ('attila-valter',                'Attila Valter',                'Bahrain - Victorious',             'HU'),
+  -- Lidl - Trek
+  ('mattias-skjelmose',            'Mattias Skjelmose',            'Lidl - Trek',                      'DK'),
+  ('julien-bernard',               'Julien Bernard',               'Lidl - Trek',                      'FR'),
+  ('lennard-kamna',                'Lennard Kamna',                'Lidl - Trek',                      'DE'),
+  ('patrick-konrad',               'Patrick Konrad',               'Lidl - Trek',                      'AT'),
+  ('jacopo-mosca',                 'Jacopo Mosca',                 'Lidl - Trek',                      'IT'),
+  ('mathias-sunekaer-norsgaard',   'Mathias Sunekaer Norsgaard',   'Lidl - Trek',                      'DK'),
+  ('thibau-nys',                   'Thibau Nys',                   'Lidl - Trek',                      'BE'),
+  ('mads-pedersen',                'Mads Pedersen',                'Lidl - Trek',                      'DK'),
+  -- Groupama - FDJ United
+  ('clement-berthet',              'Clement Berthet',              'Groupama - FDJ United',            'FR'),
+  ('olivier-le-gac',               'Olivier le Gac',               'Groupama - FDJ United',            'FR'),
+  ('valentin-madouas',             'Valentin Madouas',             'Groupama - FDJ United',            'FR'),
+  ('guillaume-martin',             'Guillaume Martin',             'Groupama - FDJ United',            'FR'),
+  ('rudy-molard',                  'Rudy Molard',                  'Groupama - FDJ United',            'FR'),
+  ('enzo-paleni',                  'Enzo Paleni',                  'Groupama - FDJ United',            'FR'),
+  ('remy-rochas',                  'Remy Rochas',                  'Groupama - FDJ United',            'FR'),
+  ('bastien-tronchon',             'Bastien Tronchon',             'Groupama - FDJ United',            'FR'),
+  -- Alpecin - Premier Tech
+  ('kaden-groves',                 'Kaden Groves',                 'Alpecin - Premier Tech',           'AU'),
+  ('francesco-busatto',            'Francesco Busatto',            'Alpecin - Premier Tech',           'IT'),
+  ('lindsay-de-vylder',            'Lindsay de Vylder',            'Alpecin - Premier Tech',           'BE'),
+  ('ramses-debruyne',              'Ramses Debruyne',              'Alpecin - Premier Tech',           'BE'),
+  ('gal-glivar',                   'Gal Glivar',                   'Alpecin - Premier Tech',           'SI'),
+  ('michael-gogl',                 'Michael Gogl',                 'Alpecin - Premier Tech',           'AT'),
+  ('hugo-houle',                   'Hugo Houle',                   'Alpecin - Premier Tech',           'CA'),
+  ('sente-sentjens',               'Sente Sentjens',               'Alpecin - Premier Tech',           'BE'),
+  -- NSN Cycling Team
+  ('alexey-lutsenko',              'Alexey Lutsenko',              'NSN Cycling Team',                 'KZ'),
+  ('george-bennett',               'George Bennett',               'NSN Cycling Team',                 'NZ'),
+  ('jan-hirt',                     'Jan Hirt',                     'NSN Cycling Team',                 'CZ'),
+  ('hugo-hofstetter',              'Hugo Hofstetter',              'NSN Cycling Team',                 'FR'),
+  ('moritz-kretschy',              'Moritz Kretschy',              'NSN Cycling Team',                 'DE'),
+  ('pau-marti',                    'Pau Marti',                    'NSN Cycling Team',                 'ES'),
+  ('nick-schultz',                 'Nick Schultz',                 'NSN Cycling Team',                 'AU'),
+  ('floris-van-tricht',            'Floris van Tricht',            'NSN Cycling Team',                 'BE'),
+  -- Soudal Quick-Step
+  ('mikel-landa',                  'Mikel Landa',                  'Soudal Quick-Step',                'ES'),
+  ('alberto-dainese',              'Alberto Dainese',              'Soudal Quick-Step',                'IT'),
+  ('gianmarco-garofoli',           'Gianmarco Garofoli',           'Soudal Quick-Step',                'IT'),
+  ('ethan-hayter',                 'Ethan Hayter',                 'Soudal Quick-Step',                'GB'),
+  ('valentin-paret-peintre',       'Valentin Paret-Peintre',       'Soudal Quick-Step',                'FR'),
+  ('fabio-van-den-bossche',        'Fabio van den Bossche',        'Soudal Quick-Step',                'BE'),
+  ('mauri-vansevenant',            'Mauri Vansevenant',            'Soudal Quick-Step',                'BE'),
+  ('filippo-zana',                 'Filippo Zana',                 'Soudal Quick-Step',                'IT'),
+  -- Uno-X Mobility
+  ('magnus-cort',                  'Magnus Cort',                  'Uno-X Mobility',                   'DK'),
+  ('simon-dalby',                  'Simon Dalby',                  'Uno-X Mobility',                   'DK'),
+  ('fredrik-dversnes-lavik',       'Fredrik Dversnes Lavik',       'Uno-X Mobility',                   'NO'),
+  ('tobias-halland-johannessen',   'Tobias Halland Johannessen',   'Uno-X Mobility',                   'NO'),
+  ('andreas-kron',                 'Andreas Kron',                 'Uno-X Mobility',                   'DK'),
+  ('andreas-leknessund',           'Andreas Leknessund',           'Uno-X Mobility',                   'NO'),
+  ('rasmus-tiller',                'Rasmus Tiller',                'Uno-X Mobility',                   'NO'),
+  ('martin-tjotta',                'Martin Tjotta',                'Uno-X Mobility',                   'NO'),
+  -- Cofidis
+  ('emanuel-buchmann',             'Emanuel Buchmann',             'Cofidis',                          'DE'),
+  ('bryan-coquard',                'Bryan Coquard',                'Cofidis',                          'FR'),
+  ('alex-kirsch',                  'Alex Kirsch',                  'Cofidis',                          'LU'),
+  ('sylvain-moniquet',             'Sylvain Moniquet',             'Cofidis',                          'BE'),
+  ('paul-ourselin',                'Paul Ourselin',                'Cofidis',                          'FR'),
+  ('alexis-renard',                'Alexis Renard',                'Cofidis',                          'FR'),
+  ('louis-rouland',                'Louis Rouland',                'Cofidis',                          'FR'),
+  ('sergio-samitier',              'Sergio Samitier',              'Cofidis',                          'ES'),
+  -- Team Jayco AlUla
+  ('alessandro-covi',              'Alessandro Covi',              'Team Jayco AlUla',                 'IT'),
+  ('koen-bouwman',                 'Koen Bouwman',                 'Team Jayco AlUla',                 'NL'),
+  ('paul-double',                  'Paul Double',                  'Team Jayco AlUla',                 'GB'),
+  ('asbjorn-hellemose',            'Asbjorn Hellemose',            'Team Jayco AlUla',                 'DK'),
+  ('hamish-mckenzie',              'Hamish Mckenzie',              'Team Jayco AlUla',                 'NZ'),
+  ('finlay-pickering',             'Finlay Pickering',             'Team Jayco AlUla',                 'GB'),
+  ('rudy-porter',                  'Rudy Porter',                  'Team Jayco AlUla',                 'AU'),
+  ('jasha-sutterlin',              'Jasha Sutterlin',              'Team Jayco AlUla',                 'DE'),
+  -- EF Education - EasyPost
+  ('richard-carapaz',              'Richard Carapaz',              'EF Education - EasyPost',          'EC'),
+  ('vincenzo-albanese',            'Vincenzo Albanese',            'EF Education - EasyPost',          'IT'),
+  ('markel-beloki',                'Markel Beloki',                'EF Education - EasyPost',          'ES'),
+  ('alastair-mackellar',           'Alastair Mackellar',           'EF Education - EasyPost',          'AU'),
+  ('darren-rafferty',              'Darren Rafferty',              'EF Education - EasyPost',          'IE'),
+  ('juan-felipe-rodriguez',        'Juan Felipe Rodriguez',        'EF Education - EasyPost',          'CO'),
+  ('james-shaw',                   'James Shaw',                   'EF Education - EasyPost',          'GB'),
+  ('georg-steinhauser',            'Georg Steinhauser',            'EF Education - EasyPost',          'DE'),
+  -- Tudor Pro Cycling Team
+  ('marco-brenner',                'Marco Brenner',                'Tudor Pro Cycling Team',           'DE'),
+  ('will-barta',                   'Will Barta',                   'Tudor Pro Cycling Team',           'US'),
+  ('arthur-kluckers',              'Arthur Kluckers',              'Tudor Pro Cycling Team',           'LU'),
+  ('stefan-kung',                  'Stefan Kung',                  'Tudor Pro Cycling Team',           'CH'),
+  ('roland-thalmann',              'Roland Thalmann',              'Tudor Pro Cycling Team',           'CH'),
+  ('larry-warbasse',               'Larry Warbasse',               'Tudor Pro Cycling Team',           'US'),
+  ('fabian-weiss',                 'Fabian Weiss',                 'Tudor Pro Cycling Team',           'CH'),
+  ('hannes-wilksch',               'Hannes Wilksch',               'Tudor Pro Cycling Team',           'DE'),
+  -- XDS Astana Team
+  ('harold-tejada',                'Harold Tejada',                'XDS Astana Team',                  'CO'),
+  ('yevgeniy-fedorov',             'Yevgeniy Fedorov',             'XDS Astana Team',                  'KZ'),
+  ('lorenzo-fortunato',            'Lorenzo Fortunato',            'XDS Astana Team',                  'IT'),
+  ('victor-langellotti',           'Victor Langellotti',           'XDS Astana Team',                  'MC'),
+  ('henok-mulubrhan',              'Henok Mulubrhan',              'XDS Astana Team',                  'ER'),
+  ('cristian-rodriguez',           'Cristian Rodriguez',           'XDS Astana Team',                  'ES'),
+  ('alessandro-romele',            'Alessandro Romele',            'XDS Astana Team',                  'IT'),
+  ('darren-van-bekkum',            'Darren van Bekkum',            'XDS Astana Team',                  'NL'),
+  -- Burgos Burpellet BH
+  ('jesus-herrada',                'Jesus Herrada',                'Burgos Burpellet BH',              'ES'),
+  ('clement-alleno',               'Clement Alleno',               'Burgos Burpellet BH',              'FR'),
+  ('mario-aparicio',               'Mario Aparicio',               'Burgos Burpellet BH',              'ES'),
+  ('sergio-geovani-chumil',        'Sergio Geovani Chumil',        'Burgos Burpellet BH',              'GT'),
+  ('jose-manuel-diaz',             'Jose Manuel Diaz',             'Burgos Burpellet BH',              'ES'),
+  ('jose-luis-faura',              'Jose Luis Faura',              'Burgos Burpellet BH',              'ES'),
+  ('sinuhe-fernandez',             'Sinuhe Fernandez',             'Burgos Burpellet BH',              'ES'),
+  ('cesar-macias',                 'Cesar Macias',                 'Burgos Burpellet BH',              'ES'),
+  -- Lotto Intermarché
+  ('jarno-widar',                  'Jarno Widar',                  'Lotto Intermarché',                'BE'),
+  ('vito-braet',                   'Vito Braet',                   'Lotto Intermarché',                'BE'),
+  ('lars-craps',                   'Lars Craps',                   'Lotto Intermarché',                'BE'),
+  ('steffen-de-schuyteneer',       'Steffen de Schuyteneer',       'Lotto Intermarché',                'BE'),
+  ('lorenzo-rota',                 'Lorenzo Rota',                 'Lotto Intermarché',                'IT'),
+  ('reuben-thompson',              'Reuben Thompson',              'Lotto Intermarché',                'NZ'),
+  ('luca-van-boven',               'Luca van Boven',               'Lotto Intermarché',                'BE'),
+  ('roel-van-sintmaartensdijk',    'Roel van Sintmaartensdijk',    'Lotto Intermarché',                'NL'),
+  -- Team Picnic PostNL
+  ('chris-hamilton',               'Chris Hamilton',               'Team Picnic PostNL',               'AU'),
+  ('timo-de-jong',                 'Timo de Jong',                 'Team Picnic PostNL',               'NL'),
+  ('mattia-gaffuri',               'Mattia Gaffuri',               'Team Picnic PostNL',               'IT'),
+  ('gijs-leemreize',               'Gijs Leemreize',               'Team Picnic PostNL',               'NL'),
+  ('juan-guillermo-martinez',      'Juan Guillermo Martinez',      'Team Picnic PostNL',               'CO'),
+  ('oliver-peace',                 'Oliver Peace',                 'Team Picnic PostNL',               'GB'),
+  ('henri-francois-renard-haquin', 'Henri-Francois Renard-Haquin', 'Team Picnic PostNL',               'FR'),
+  ('timo-roosen',                  'Timo Roosen',                  'Team Picnic PostNL',               'NL'),
+  -- Equipo Kern Pharma
+  ('urko-berrade',                 'Urko Berrade',                 'Equipo Kern Pharma',               'ES'),
+  ('marc-brustenga',               'Marc Brustenga',               'Equipo Kern Pharma',               'ES'),
+  ('ivan-cobo',                    'Ivan Cobo',                    'Equipo Kern Pharma',               'ES'),
+  ('inigo-elosegui',               'Inigo Elosegui',               'Equipo Kern Pharma',               'ES'),
+  ('ibon-ruiz',                    'Ibon Ruiz',                    'Equipo Kern Pharma',               'ES'),
+  ('ivan-ramiro-sosa',             'Ivan Ramiro Sosa',             'Equipo Kern Pharma',               'CO'),
+  ('diego-uriarte',                'Diego Uriarte',                'Equipo Kern Pharma',               'ES'),
+  ('mats-wenzel',                  'Mats Wenzel',                  'Equipo Kern Pharma',               'LU')
+) as v(slug, name, team, country)
+where t.year = 2026 and t.pcs_slug = 'vuelta-a-espana'
+on conflict (tour_id, pcs_slug) do update
+  set name = excluded.name, team = excluded.team,
+      country = excluded.country, is_active = true;
+
+-- Provisional riders (0020) that are not in the final 184 -> hide from tip pickers.
+update riders r
+set is_active = false
+from tours t
+where r.tour_id = t.id and t.year = 2026 and t.pcs_slug = 'vuelta-a-espana'
+  and r.pcs_slug in (
+    'alexander-hajek', 'clement-champoussin', 'harold-martin-lopez',
+    'laurence-pithie', 'laurens-de-plus', 'luca-vergallito', 'luke-plapp',
+    'marijn-van-den-berg', 'max-poole', 'menno-huising', 'nairo-quintana',
+    'oscar-riesebeek', 'steff-cras', 'tijmen-graat', 'torstein-traeen'
+  );
