@@ -14,6 +14,7 @@ import {
   stageWinnerLabel,
   stageWinnerMatch,
 } from "../lib/stageResult";
+import { stageLabel } from "../lib/stageLabel";
 import { Countdown } from "../components/Countdown";
 
 export function Stages() {
@@ -66,7 +67,7 @@ export function Stages() {
             >
               <div>
                 <div className="font-semibold text-slate-100">
-                  Etappe {s.number}
+                  {stageLabel(tour.kind, s)}
                   {s.start_city && s.finish_city
                     ? ` · ${s.start_city} → ${s.finish_city}`
                     : ""}

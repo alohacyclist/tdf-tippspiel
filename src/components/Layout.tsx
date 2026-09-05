@@ -1,14 +1,17 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { signOut } from "../lib/supabase";
 import type { AppCtx } from "../lib/appContext";
-
-const tabs = [
-  { to: "/", label: "Etappen", end: true },
-  { to: "/specials", label: "Wertungen", end: false },
-  { to: "/rangliste", label: "Rangliste", end: false },
-];
+import { stagesNounPlural } from "../lib/stageLabel";
 
 export function Layout({ ctx }: { ctx: AppCtx }) {
+  const isGrandTour = ctx.tour.kind === "grand_tour";
+  const tabs = [
+    { to: "/", label: stagesNounPlural(ctx.tour.kind), end: true },
+    ...(isGrandTour
+      ? [{ to: "/specials", label: "Wertungen", end: false }]
+      : []),
+    { to: "/rangliste", label: "Rangliste", end: false },
+  ];
   return (
     <div className="mx-auto flex min-h-full max-w-xl flex-col">
       <header className="flex items-center justify-between px-4 py-3">

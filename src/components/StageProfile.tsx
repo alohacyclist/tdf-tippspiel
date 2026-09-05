@@ -5,13 +5,15 @@ export function StageProfile({
   raceSlug,
   stageNumber,
   year,
+  oneDay = false,
 }: {
   raceSlug: string;
   stageNumber: number;
   year: number;
+  oneDay?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
-  const pcs = pcsStageUrl(raceSlug, year, stageNumber);
+  const pcs = pcsStageUrl(raceSlug, year, stageNumber, oneDay);
 
   if (failed) {
     return (

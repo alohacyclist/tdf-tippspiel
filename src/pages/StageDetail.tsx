@@ -31,6 +31,7 @@ import { StageProfile } from "../components/StageProfile";
 import { ClassificationCard } from "../components/ClassificationCard";
 import { QuestionCard } from "../components/QuestionCard";
 import { pcsStageUrl } from "../lib/pcs";
+import { stageLabel, stagesNounPlural } from "../lib/stageLabel";
 
 const TYPE_LABEL: Record<StageType, string> = {
   flat: "Flachetappe",
@@ -173,7 +174,7 @@ export function StageDetail() {
     <div className="py-3">
       <div className="flex items-center justify-between">
         <Link to="/" className="text-sm text-slate-400">
-          ← Etappen
+          ← {stagesNounPlural(tour.kind)}
         </Link>
         <div className="flex gap-3 text-sm">
           {prev ? (
@@ -193,7 +194,7 @@ export function StageDetail() {
         </div>
       </div>
       <h1 className="mt-2 text-xl font-bold text-slate-100">
-        Etappe {stage.number}
+        {stageLabel(tour.kind, stage)}
         {stage.start_city && stage.finish_city
           ? ` · ${stage.start_city} → ${stage.finish_city}`
           : ""}
@@ -221,6 +222,7 @@ export function StageDetail() {
         raceSlug={tour.pcs_slug}
         stageNumber={stage.number}
         year={tour.year}
+        oneDay={tour.kind === "one_day"}
       />
 
       {!started ? (
@@ -272,7 +274,12 @@ export function StageDetail() {
             Tipps & Ergebnis
           </h2>
           <a
-            href={pcsStageUrl(tour.pcs_slug, tour.year, stage.number)}
+            href={pcsStageUrl(
+              tour.pcs_slug,
+              tour.year,
+              stage.number,
+              tour.kind === "one_day",
+            )}
             target="_blank"
             rel="noopener noreferrer"
             className="mb-3 inline-block text-sm text-accent"

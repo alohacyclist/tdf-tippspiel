@@ -2,22 +2,32 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { useApp } from "../lib/appContext";
 import {
   getLeaderboard,
+  getSeasonLeaderboard,
   listPlayerStageTips,
   listRiders,
   listStages,
   type PlayerStageTip,
 } from "../lib/queries";
-import type { LeaderboardRow, Stage } from "../lib/types";
+import type {
+  LeaderboardRow,
+  SeasonLeaderboardRow,
+  Stage,
+} from "../lib/types";
 import { stageHasResult } from "../lib/stageResult";
 import { tourTheme } from "../lib/theme";
 import { Confetti } from "../components/Confetti";
 import { PlayerStageBreakdown } from "../components/PlayerStageBreakdown";
 
 const COLS = 6;
+type View = "tour" | "season";
+// Both leaderboard shapes share the columns we render.
+type Row = LeaderboardRow | SeasonLeaderboardRow;
 
 export function Leaderboard() {
   const { tour } = useApp();
-  const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [view, setView] = useState<View>("tour");
+  const [tourRows, setTourRows] = useState<LeaderboardRow[]>([]);
+  const [seasonRows, setSeasonRows] = useState<SeasonLeaderboardRow[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
   const [riderName, setRiderName] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +41,9 @@ export function Leaderboard() {
   const [tipError, setTipError] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    getLeaderboard(tour.id)
-      .then(setRows)
+    getLeaderboard(tour.id).then(setTourRows).catch((e) => setError(e.message));
+    getSeasonLeaderboard(tour.year)
+      .then(setSeasonRows)
       .catch((e) => setError(e.message));
     Promise.all([listStages(tour.id), listRiders(tour.id)])
       .then(([s, r]) => {
@@ -40,7 +51,7 @@ export function Leaderboard() {
         setRiderName(new Map(r.map((x) => [x.id, x.name])));
       })
       .catch((e) => setError(e.message));
-  }, [tour.id]);
+  }, [tour.id, tour.year]);
 
   // Fire confetti on the first Rangliste visit per tour per browser session.
   useEffect(() => {
@@ -75,16 +86,40 @@ export function Leaderboard() {
 
   if (error) return <p className="py-4 text-red-400">{error}</p>;
 
-  // Rank by stage points only (the official final result); ties share a rank.
+  // Only the single-tour view drills into per-stage tips; the season view aggregates
+  // across events, so its rows are not expandable.
+  const rows: Row[] = view === "tour" ? tourRows : seasonRows;
+  const expandable = view === "tour";
+
+  // Rank by stage points only; ties share a rank.
   let lastPts = Number.NaN;
   let lastRank = 0;
 
   return (
     <div className="py-3">
       {celebrate && <Confetti colors={tourTheme(tour.pcs_slug).confetti} />}
-      <h1 className="mb-1 text-xl font-bold text-slate-100">Rangliste</h1>
+      <h1 className="mb-2 text-xl font-bold text-slate-100">Rangliste</h1>
+
+      <div className="mb-2 flex gap-1">
+        {(["tour", "season"] as const).map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`rounded-lg px-3 py-1 text-xs ${
+              view === v
+                ? "bg-accent font-semibold text-accent-contrast"
+                : "bg-slate-800 text-slate-300"
+            }`}
+          >
+            {v === "tour" ? "Diese Tour" : `Saison ${tour.year}`}
+          </button>
+        ))}
+      </div>
+
       <p className="mb-3 text-xs text-slate-500">
-        Rang nach Etappen-Punkten. Zeile antippen für die Etappen-Tipps.
+        {view === "tour"
+          ? "Rang nach Etappen-Punkten. Zeile antippen für die Etappen-Tipps."
+          : `Gesamtwertung ${tour.year} über alle Rennen.`}
       </p>
 
       <div className="overflow-x-auto">
@@ -105,18 +140,22 @@ export function Leaderboard() {
                 lastRank = i + 1;
                 lastPts = r.stage_points;
               }
-              const open = openId === r.user_id;
+              const open = expandable && openId === r.user_id;
               return (
                 <Fragment key={r.user_id}>
                   <tr
-                    onClick={() => toggle(r.user_id)}
-                    className="cursor-pointer border-b border-slate-900 hover:bg-slate-900"
+                    onClick={expandable ? () => toggle(r.user_id) : undefined}
+                    className={`border-b border-slate-900 ${
+                      expandable ? "cursor-pointer hover:bg-slate-900" : ""
+                    }`}
                   >
                     <td className="py-2 pr-2 text-slate-500">{lastRank}</td>
                     <td className="py-2 pr-2 text-slate-200">
-                      <span className="mr-1 inline-block text-slate-600">
-                        {open ? "▾" : "▸"}
-                      </span>
+                      {expandable && (
+                        <span className="mr-1 inline-block text-slate-600">
+                          {open ? "▾" : "▸"}
+                        </span>
+                      )}
                       {r.display_name ?? "—"}
                       {lastRank === 1 && r.stage_points > 0 && (
                         <span className="ml-1">🍺</span>

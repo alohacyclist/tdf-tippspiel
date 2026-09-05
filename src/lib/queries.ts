@@ -10,6 +10,7 @@ import type {
   QuestionOption,
   QuestionResult,
   Rider,
+  SeasonLeaderboardRow,
   Stage,
   StageTip,
   Tour,
@@ -300,6 +301,20 @@ export async function getLeaderboard(
       .from("leaderboard")
       .select("*")
       .eq("tour_id", tourId)
+      .order("stage_points", { ascending: false })
+      .order("correct_winners", { ascending: false }),
+  );
+}
+
+// Combined standings across every tour of a calendar year (season = year).
+export async function getSeasonLeaderboard(
+  year: number,
+): Promise<SeasonLeaderboardRow[]> {
+  return unwrap(
+    await supabase
+      .from("season_leaderboard")
+      .select("*")
+      .eq("year", year)
       .order("stage_points", { ascending: false })
       .order("correct_winners", { ascending: false }),
   );

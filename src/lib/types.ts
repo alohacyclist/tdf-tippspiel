@@ -8,12 +8,15 @@ export interface Profile {
   role: ProfileRole;
 }
 
+export type TourKind = "grand_tour" | "one_day";
+
 export interface Tour {
   id: string;
   year: number;
   name: string;
   is_active: boolean;
   pcs_slug: string;
+  kind: TourKind;
   // earliest stage start (derived in listTours); null if no stages seeded yet.
   starts_at: string | null;
 }
@@ -123,6 +126,16 @@ export interface QuestionResult {
 
 export interface LeaderboardRow {
   tour_id: string;
+  user_id: string;
+  display_name: string | null;
+  correct_winners: number;
+  stage_points: number;
+  special_points: number;
+  question_points: number;
+}
+
+export interface SeasonLeaderboardRow {
+  year: number;
   user_id: string;
   display_name: string | null;
   correct_winners: number;

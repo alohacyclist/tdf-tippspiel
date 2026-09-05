@@ -1,10 +1,13 @@
-// PCS-Etappenseite (Ergebnis, Profil, Details). Aus Race-Slug + Jahr + Nummer.
+// PCS-Rennseite (Ergebnis, Profil, Details). Grand Tour → /stage-N; Eintagesrennen
+// (Monument, WM-Einzelrennen) haben keine Etappennummer → /result.
 export function pcsStageUrl(
   raceSlug: string,
   year: number,
   stageNumber: number,
+  oneDay = false,
 ): string {
-  return `https://www.procyclingstats.com/race/${raceSlug}/${year}/stage-${stageNumber}`;
+  const base = `https://www.procyclingstats.com/race/${raceSlug}/${year}`;
+  return oneDay ? `${base}/result` : `${base}/stage-${stageNumber}`;
 }
 
 // Lokales Höhenprofil-Asset, pro Tour-Ordner (zwei Grand Tours teilen sich ein
