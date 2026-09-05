@@ -1,0 +1,39 @@
+name: ingest-results
+
+# Automated stage-winner ingestion. Adjust the cron window per race (below = Vuelta
+# afternoons, Aug/Sep). Manual runs default to dry-run for safe testing.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only print intended writes"
+        type: boolean
+        default: true
+  schedule:
+    # every 20 min, 12:00–20:00 UTC, in August and September
+    - cron: "*/20 12-20 * 8,9 *"
+
+concurrency:
+  group: ingest-results
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    services:
+      flaresolverr:
+        image: ghcr.io/flaresolverr/flaresolverr:latest
+        ports:
+          - 8191:8191
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/ingest/requirements.txt
+      - name: Ingest results
+        run: python scripts/ingest/run.py ${{ inputs.dry_run && '--dry-run' || '' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FLARESOLVERR_URL: http://localhost:8191/v1
