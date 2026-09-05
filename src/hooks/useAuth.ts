@@ -8,6 +8,7 @@ export interface AuthState {
   session: Session | null;
   profile: Profile | null;
   expired: boolean;
+  error: string | null;
   refreshProfile: () => Promise<void>;
 }
 
@@ -16,6 +17,7 @@ export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [expired, setExpired] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const hadSession = useRef(false);
 
   const loadProfile = useCallback(async (userId: string | undefined) => {
@@ -23,11 +25,14 @@ export function useAuth(): AuthState {
       setProfile(null);
       return;
     }
-    const { data } = await supabase
+    const { data, error: err } = await supabase
       .from("profiles")
       .select("id, display_name, status, role")
       .eq("id", userId)
       .maybeSingle();
+    // Surface real query errors (e.g. a DB migration not applied) instead of
+    // leaving profile null forever, which shows an endless "Laden…".
+    setError(err ? err.message : null);
     setProfile((data as Profile) ?? null);
   }, []);
 
@@ -65,5 +70,5 @@ export function useAuth(): AuthState {
     [loadProfile, session],
   );
 
-  return { loading, session, profile, expired, refreshProfile };
+  return { loading, session, profile, expired, error, refreshProfile };
 }
