@@ -18,8 +18,15 @@ import {
   adminSetRole,
   adminSetStageResult,
   adminSetStageTip,
+  adminSetStatus,
 } from "../lib/adminQueries";
-import type { Classification, ProfileRole, Rider, Stage } from "../lib/types";
+import type {
+  Classification,
+  ProfileRole,
+  ProfileStatus,
+  Rider,
+  Stage,
+} from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
 import { RiderCombobox } from "../components/RiderCombobox";
 import { QuestionsSection } from "../components/AdminQuestions";
@@ -428,6 +435,7 @@ function UsersSection({
   const { userId, refreshProfile } = useApp();
   const [error, setError] = useState<string | null>(null);
   const ROLES: ProfileRole[] = ["member", "editor", "admin"];
+  const STATUSES: ProfileStatus[] = ["pending", "active", "blocked"];
 
   async function setRole(targetId: string, role: ProfileRole) {
     setError(null);
@@ -441,9 +449,19 @@ function UsersSection({
     }
   }
 
+  async function setStatus(targetId: string, status: ProfileStatus) {
+    setError(null);
+    try {
+      await adminSetStatus(targetId, status);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Fehler");
+    }
+  }
+
   return (
     <>
-      <h2 className="mb-2 mt-8 font-semibold text-slate-200">
+      <h2 className="mb-2 mt-2 font-semibold text-slate-200">
         Nutzer & Rollen
       </h2>
       {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
@@ -451,23 +469,39 @@ function UsersSection({
         {profiles.map((p) => (
           <div
             key={p.id}
-            className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
           >
             <span className="text-sm text-slate-200">
               {p.display_name ?? "—"}
-              <span className="ml-2 text-xs text-slate-500">{p.status}</span>
             </span>
-            <select
-              value={p.role}
-              onChange={(e) => setRole(p.id, e.target.value as ProfileRole)}
-              className="rounded-lg border border-slate-600 bg-slate-950 px-2 py-1 text-sm text-slate-100"
-            >
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <select
+                value={p.status}
+                onChange={(e) =>
+                  setStatus(p.id, e.target.value as ProfileStatus)
+                }
+                className="rounded-lg border border-slate-600 bg-slate-950 px-2 py-1 text-sm text-slate-100"
+                aria-label="Status"
+              >
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={p.role}
+                onChange={(e) => setRole(p.id, e.target.value as ProfileRole)}
+                className="rounded-lg border border-slate-600 bg-slate-950 px-2 py-1 text-sm text-slate-100"
+                aria-label="Rolle"
+              >
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         ))}
         {profiles.length === 0 && (

@@ -185,3 +185,10 @@ export function adminSetRole(
 ): Promise<void> {
   return rpc("admin_set_role", { p_user_id: userId, p_role: role });
 }
+
+export function adminSetStatus(
+  userId: string,
+  status: "pending" | "active" | "blocked",
+): Promise<void> {
+  return rpc("admin_set_status", { p_user_id: userId, p_status: status });
+}
