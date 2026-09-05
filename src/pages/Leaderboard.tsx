@@ -8,11 +8,7 @@ import {
   listStages,
   type PlayerStageTip,
 } from "../lib/queries";
-import type {
-  LeaderboardRow,
-  SeasonLeaderboardRow,
-  Stage,
-} from "../lib/types";
+import type { LeaderboardRow, SeasonLeaderboardRow, Stage } from "../lib/types";
 import { stageHasResult } from "../lib/stageResult";
 import { tourTheme } from "../lib/theme";
 import { Confetti } from "../components/Confetti";
@@ -41,7 +37,9 @@ export function Leaderboard() {
   const [tipError, setTipError] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    getLeaderboard(tour.id).then(setTourRows).catch((e) => setError(e.message));
+    getLeaderboard(tour.id)
+      .then(setTourRows)
+      .catch((e) => setError(e.message));
     getSeasonLeaderboard(tour.year)
       .then(setSeasonRows)
       .catch((e) => setError(e.message));
@@ -145,8 +143,23 @@ export function Leaderboard() {
                 <Fragment key={r.user_id}>
                   <tr
                     onClick={expandable ? () => toggle(r.user_id) : undefined}
+                    onKeyDown={
+                      expandable
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              toggle(r.user_id);
+                            }
+                          }
+                        : undefined
+                    }
+                    role={expandable ? "button" : undefined}
+                    tabIndex={expandable ? 0 : undefined}
+                    aria-expanded={expandable ? open : undefined}
                     className={`border-b border-slate-900 ${
-                      expandable ? "cursor-pointer hover:bg-slate-900" : ""
+                      expandable
+                        ? "cursor-pointer hover:bg-slate-900 focus:bg-slate-900 focus:outline-none"
+                        : ""
                     }`}
                   >
                     <td className="py-2 pr-2 text-slate-500">{lastRank}</td>
