@@ -192,3 +192,15 @@ export function adminSetStatus(
 ): Promise<void> {
   return rpc("admin_set_status", { p_user_id: userId, p_status: status });
 }
+
+export function adminSetRiderActive(
+  riderId: string,
+  active: boolean,
+  dnfStage?: number | null,
+): Promise<void> {
+  return rpc("admin_set_rider_active", {
+    p_rider_id: riderId,
+    p_active: active,
+    p_dnf_stage: dnfStage ?? null,
+  });
+}

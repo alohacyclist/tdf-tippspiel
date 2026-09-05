@@ -15,6 +15,7 @@ import {
   adminDeleteClassification,
   adminSetClassificationOpen,
   adminSetClassificationResults,
+  adminSetRiderActive,
   adminSetRole,
   adminSetStageResult,
   adminSetStageTip,
@@ -35,7 +36,8 @@ function toIso(local: string): string {
   return new Date(local).toISOString();
 }
 
-type AdminTab = "results" | "classifications" | "questions" | "tips" | "users";
+type AdminTab =
+  "results" | "classifications" | "questions" | "riders" | "tips" | "users";
 
 // Deterministic to-do list: what still needs an admin action right now. No
 // scraping — derived from the data already loaded (started stage without a
@@ -186,6 +188,7 @@ export function Admin() {
     { key: "results", label: "Ergebnisse" },
     { key: "classifications", label: "Wertungen" },
     { key: "questions", label: "Fragen" },
+    { key: "riders", label: "Fahrer" },
     ...(isAdmin
       ? [
           { key: "tips" as AdminTab, label: "Tipps" },
@@ -278,6 +281,8 @@ export function Admin() {
           />
         )}
 
+        {tab === "riders" && <RidersSection riders={riders} onDone={reload} />}
+
         {tab === "tips" && isAdmin && (
           <StageTipBackfill
             profiles={profiles}
@@ -291,6 +296,88 @@ export function Admin() {
           <UsersSection profiles={profiles} onDone={reload} />
         )}
       </div>
+    </div>
+  );
+}
+
+function RidersSection({
+  riders,
+  onDone,
+}: {
+  riders: Rider[];
+  onDone: () => void;
+}) {
+  const [q, setQ] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const query = q.trim().toLowerCase();
+  // No search -> the abandoned riders (to reactivate). With search -> name matches.
+  const shown = useMemo(() => {
+    const list = query
+      ? riders.filter((r) => r.name.toLowerCase().includes(query))
+      : riders.filter((r) => !r.is_active);
+    return [...list].sort((a, b) => a.name.localeCompare(b.name));
+  }, [riders, query]);
+
+  async function toggle(r: Rider) {
+    setBusyId(r.id);
+    setError(null);
+    try {
+      await adminSetRiderActive(r.id, !r.is_active);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Fehler");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Fahrer suchen…"
+        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
+      />
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      {!query && (
+        <p className="text-xs text-slate-500">
+          Ohne Suche: ausgeschiedene Fahrer. Suchen, um jemanden als DNF zu
+          markieren.
+        </p>
+      )}
+      {shown.map((r) => (
+        <div
+          key={r.id}
+          className="flex items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+        >
+          <span className="min-w-0 truncate text-sm text-slate-200">
+            {r.name}
+            <span className="ml-2 text-xs text-slate-500">{r.team}</span>
+          </span>
+          <div className="flex shrink-0 items-center gap-2">
+            <span
+              className={`text-xs ${r.is_active ? "text-green-400" : "text-red-400"}`}
+            >
+              {r.is_active ? "aktiv" : "DNF"}
+            </span>
+            <button
+              disabled={busyId === r.id}
+              onClick={() => toggle(r)}
+              className="rounded-lg bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100 disabled:opacity-50"
+            >
+              {r.is_active ? "DNF" : "reaktivieren"}
+            </button>
+          </div>
+        </div>
+      ))}
+      {shown.length === 0 && (
+        <p className="text-sm text-slate-400">
+          {query ? "Kein Treffer." : "Keine ausgeschiedenen Fahrer."}
+        </p>
+      )}
     </div>
   );
 }
