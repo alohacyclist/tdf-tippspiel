@@ -3,6 +3,9 @@ import { signOut } from "../lib/supabase";
 import type { AppCtx } from "../lib/appContext";
 import { stagesNounPlural } from "../lib/stageLabel";
 
+const navClass = ({ isActive }: { isActive: boolean }) =>
+  `text-sm ${isActive ? "text-accent" : "text-slate-400 hover:text-slate-200"}`;
+
 export function Layout({ ctx }: { ctx: AppCtx }) {
   const isGrandTour = ctx.tour.kind === "grand_tour";
   const tabs = [
@@ -12,9 +15,10 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
       : []),
     { to: "/rangliste", label: "Rangliste", end: false },
   ];
+
   return (
-    <div className="mx-auto flex min-h-full max-w-xl flex-col">
-      <header className="flex items-center justify-between px-4 py-3">
+    <div className="mx-auto flex min-h-full max-w-xl flex-col md:max-w-4xl">
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-800/60 bg-slate-950/95 px-4 py-3 backdrop-blur">
         <div className="flex min-w-0 items-center gap-2">
           {ctx.tours.length > 1 ? (
             <select
@@ -46,23 +50,23 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
               );
             })()}
         </div>
+
         <div className="flex items-center gap-4">
+          {/* main nav lives in the header on desktop, in the bottom bar on mobile */}
+          <nav className="hidden items-center gap-4 md:flex">
+            {tabs.map((t) => (
+              <NavLink key={t.to} to={t.to} end={t.end} className={navClass}>
+                {t.label}
+              </NavLink>
+            ))}
+            <span className="h-4 w-px bg-slate-700" />
+          </nav>
           {ctx.canEdit && (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `text-sm ${isActive ? "text-accent" : "text-slate-400 hover:text-slate-200"}`
-              }
-            >
+            <NavLink to="/admin" className={navClass}>
               Admin
             </NavLink>
           )}
-          <NavLink
-            to="/profil"
-            className={({ isActive }) =>
-              `text-sm ${isActive ? "text-accent" : "text-slate-400 hover:text-slate-200"}`
-            }
-          >
+          <NavLink to="/profil" className={navClass}>
             Profil
           </NavLink>
           <button
@@ -74,11 +78,11 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
         </div>
       </header>
 
-      <main className="flex-1 px-4 pb-24">
+      <main className="flex-1 px-4 pb-24 md:pb-8">
         <Outlet context={ctx} />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 mx-auto flex max-w-xl border-t border-slate-800 bg-slate-950/95 backdrop-blur">
+      <nav className="fixed inset-x-0 bottom-0 mx-auto flex max-w-xl border-t border-slate-800 bg-slate-950/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {tabs.map((t) => (
           <NavLink
             key={t.to}
