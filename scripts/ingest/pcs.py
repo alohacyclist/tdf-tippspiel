@@ -27,13 +27,17 @@ def _fetch_html(url: str) -> str:
     return solution["response"]
 
 
-def stage_result_slugs(pcs_slug: str, year: int, number: int) -> list[str] | None:
-    """Ordered PCS rider slugs for a finished stage, or None if no result yet.
+def stage_result_slugs(
+    pcs_slug: str, year: int, number: int, one_day: bool = False
+) -> list[str] | None:
+    """Ordered PCS rider slugs for a finished race, or None if no result yet.
 
-    The winner is element [0]. Slugs (e.g. 'tadej-pogacar') come straight from PCS
-    rider URLs, so they map 1:1 to our seeded riders.pcs_slug — no fuzzy name match.
+    Grand-tour stages live at /stage-N; a one-day race (monument, WC event) has no
+    stage number and lives at /result. The winner is element [0]. Slugs (e.g.
+    'tadej-pogacar') come straight from PCS rider URLs, so they map 1:1 to our
+    seeded riders.pcs_slug — no fuzzy name match.
     """
-    rel = f"race/{pcs_slug}/{year}/stage-{number}"
+    rel = f"race/{pcs_slug}/{year}/{'result' if one_day else f'stage-{number}'}"
     html = _fetch_html(f"https://www.procyclingstats.com/{rel}")
     try:
         rows = Stage(rel, html=html, update_html=False).results()

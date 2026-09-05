@@ -60,7 +60,12 @@ def main() -> None:
             continue  # deadline still open — never touch
 
         try:
-            slugs = stage_result_slugs(tour["pcs_slug"], tour["year"], s["number"])
+            slugs = stage_result_slugs(
+                tour["pcs_slug"],
+                tour["year"],
+                s["number"],
+                one_day=tour.get("kind") == "one_day",
+            )
         except Exception as exc:  # network / FlareSolverr / parse error
             print(f"stage {s['number']}: fetch failed ({exc}) — skip")
             continue
