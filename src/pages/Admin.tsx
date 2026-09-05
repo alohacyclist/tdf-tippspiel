@@ -281,7 +281,9 @@ export function Admin() {
           />
         )}
 
-        {tab === "riders" && <RidersSection riders={riders} onDone={reload} />}
+        {tab === "riders" && (
+          <RidersSection riders={riders} stages={stages} onDone={reload} />
+        )}
 
         {tab === "tips" && isAdmin && (
           <StageTipBackfill
@@ -300,31 +302,46 @@ export function Admin() {
   );
 }
 
+function riderStatusLabel(r: Rider): string {
+  if (r.is_active) return "aktiv";
+  return r.dnf_stage != null
+    ? `DNF · Etappe ${r.dnf_stage}`
+    : "nicht gestartet";
+}
+
 function RidersSection({
   riders,
+  stages,
   onDone,
 }: {
   riders: Rider[];
+  stages: Stage[];
   onDone: () => void;
 }) {
   const [q, setQ] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [dnfStage, setDnfStage] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   const query = q.trim().toLowerCase();
-  // No search -> the abandoned riders (to reactivate). With search -> name matches.
+  // No search -> the riders currently out (to review/reactivate). With search ->
+  // name matches (to mark someone DNF/DNS).
   const shown = useMemo(() => {
     const list = query
       ? riders.filter((r) => r.name.toLowerCase().includes(query))
       : riders.filter((r) => !r.is_active);
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   }, [riders, query]);
+  const sortedStages = useMemo(
+    () => [...stages].sort((a, b) => a.number - b.number),
+    [stages],
+  );
 
-  async function toggle(r: Rider) {
+  async function apply(r: Rider, active: boolean, stageNum: number | null) {
     setBusyId(r.id);
     setError(null);
     try {
-      await adminSetRiderActive(r.id, !r.is_active);
+      await adminSetRiderActive(r.id, active, stageNum);
       onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Fehler");
@@ -342,40 +359,76 @@ function RidersSection({
         className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
       />
       {error && <p className="text-sm text-red-400">{error}</p>}
-      {!query && (
-        <p className="text-xs text-slate-500">
-          Ohne Suche: ausgeschiedene Fahrer. Suchen, um jemanden als DNF zu
-          markieren.
-        </p>
-      )}
-      {shown.map((r) => (
-        <div
-          key={r.id}
-          className="flex items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
-        >
-          <span className="min-w-0 truncate text-sm text-slate-200">
-            {r.name}
-            <span className="ml-2 text-xs text-slate-500">{r.team}</span>
-          </span>
-          <div className="flex shrink-0 items-center gap-2">
-            <span
-              className={`text-xs ${r.is_active ? "text-green-400" : "text-red-400"}`}
-            >
-              {r.is_active ? "aktiv" : "DNF"}
+      <p className="text-xs text-slate-500">
+        {query
+          ? "DNF = Aufgabe (mit Etappe), DNS = nicht gestartet — beide fliegen aus der Tipp-Auswahl."
+          : "Aktuell nicht in der Auswahl (Aufgaben + Nicht-Starter). Suchen, um jemanden zu markieren."}
+      </p>
+      {shown.map((r) => {
+        const busy = busyId === r.id;
+        return (
+          <div
+            key={r.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+          >
+            <span className="min-w-0 truncate text-sm text-slate-200">
+              {r.name}
+              <span className="ml-2 text-xs text-slate-500">{r.team}</span>
             </span>
-            <button
-              disabled={busyId === r.id}
-              onClick={() => toggle(r)}
-              className="rounded-lg bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100 disabled:opacity-50"
-            >
-              {r.is_active ? "DNF" : "reaktivieren"}
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <span
+                className={`text-xs ${r.is_active ? "text-green-400" : "text-red-400"}`}
+              >
+                {riderStatusLabel(r)}
+              </span>
+              {r.is_active ? (
+                <>
+                  <select
+                    value={dnfStage[r.id] ?? ""}
+                    onChange={(e) =>
+                      setDnfStage((p) => ({ ...p, [r.id]: e.target.value }))
+                    }
+                    className="rounded-lg border border-slate-600 bg-slate-950 px-1.5 py-1 text-xs text-slate-100"
+                    aria-label="DNF-Etappe"
+                  >
+                    <option value="">Etappe…</option>
+                    {sortedStages.map((s) => (
+                      <option key={s.id} value={s.number}>
+                        E{s.number}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    disabled={busy || !dnfStage[r.id]}
+                    onClick={() => apply(r, false, Number(dnfStage[r.id]))}
+                    className="rounded-lg bg-red-900 px-2 py-1 text-xs font-semibold text-red-100 disabled:opacity-40"
+                  >
+                    DNF
+                  </button>
+                  <button
+                    disabled={busy}
+                    onClick={() => apply(r, false, null)}
+                    className="rounded-lg bg-slate-700 px-2 py-1 text-xs font-semibold text-slate-100 disabled:opacity-50"
+                  >
+                    DNS
+                  </button>
+                </>
+              ) : (
+                <button
+                  disabled={busy}
+                  onClick={() => apply(r, true, null)}
+                  className="rounded-lg bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100 disabled:opacity-50"
+                >
+                  reaktivieren
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       {shown.length === 0 && (
         <p className="text-sm text-slate-400">
-          {query ? "Kein Treffer." : "Keine ausgeschiedenen Fahrer."}
+          {query ? "Kein Treffer." : "Alle Fahrer aktiv."}
         </p>
       )}
     </div>
