@@ -32,6 +32,7 @@ import { ClassificationCard } from "../components/ClassificationCard";
 import { QuestionCard } from "../components/QuestionCard";
 import { pcsStageUrl } from "../lib/pcs";
 import { stageLabel, stagesNounPlural } from "../lib/stageLabel";
+import { SkeletonList } from "../components/Skeleton";
 
 const TYPE_LABEL: Record<StageType, string> = {
   flat: "Flachetappe",
@@ -164,7 +165,12 @@ export function StageDetail() {
   }
 
   if (error) return <p className="py-4 text-red-400">{error}</p>;
-  if (!stage) return <p className="py-4 text-slate-400">Laden…</p>;
+  if (!stage)
+    return (
+      <div className="py-4">
+        <SkeletonList rows={4} height="h-20" />
+      </div>
+    );
 
   const myRider = pick ? ridersById.get(pick) : null;
   const dnf = !isTtt && myRider && !myRider.is_active;

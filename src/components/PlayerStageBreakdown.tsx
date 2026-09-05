@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import type { PlayerStageTip } from "../lib/queries";
 import type { Stage } from "../lib/types";
 import { stageWinnerLabel, stageWinnerMatch } from "../lib/stageResult";
+import { SkeletonList } from "./Skeleton";
 
 // Per-stage breakdown shown when a leaderboard row is expanded: actual winner
 // plus the player's tip, coloured green on a hit and red on a miss. Only stages
@@ -23,7 +24,11 @@ export function PlayerStageBreakdown({
 }) {
   if (error) return <p className="py-2 text-xs text-red-400">{error}</p>;
   if (loading || !tips)
-    return <p className="py-2 text-xs text-slate-500">Laden…</p>;
+    return (
+      <div className="py-2">
+        <SkeletonList rows={3} height="h-5" />
+      </div>
+    );
   if (resolvedStages.length === 0)
     return (
       <p className="py-2 text-xs text-slate-500">Noch keine Ergebnisse.</p>
@@ -51,10 +56,7 @@ export function PlayerStageBreakdown({
             ? "text-red-400"
             : "text-slate-600";
         return (
-          <div
-            key={s.id}
-            className="flex items-baseline gap-2 py-1 text-xs"
-          >
+          <div key={s.id} className="flex items-baseline gap-2 py-1 text-xs">
             <span className="w-8 shrink-0 text-slate-500">{s.number}</span>
             <span className="flex-1 truncate text-slate-300">{winner}</span>
             <span className={`flex-1 truncate text-right ${tipColor}`}>

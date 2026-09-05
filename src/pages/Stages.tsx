@@ -14,31 +14,46 @@ import {
   stageWinnerLabel,
   stageWinnerMatch,
 } from "../lib/stageResult";
-import { stageLabel } from "../lib/stageLabel";
+import { stageLabel, stagesNounPlural } from "../lib/stageLabel";
 import { Countdown } from "../components/Countdown";
+import { SkeletonList } from "../components/Skeleton";
 
 export function Stages() {
   const { tour, userId } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
   const [tips, setTips] = useState<Map<string, MyStageTip>>(new Map());
   const [riderName, setRiderName] = useState<Map<string, string>>(new Map());
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+    setLoading(true);
     Promise.all([
       listStages(tour.id),
       listMyStageTips(userId),
       listRiders(tour.id),
     ])
       .then(([s, ts, rs]) => {
+        if (!active) return;
         setStages(s);
         setTips(new Map(ts.map((t) => [t.stage_id, t])));
         setRiderName(new Map(rs.map((r) => [r.id, r.name])));
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => active && setError(e.message))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
   }, [tour.id, userId]);
 
   if (error) return <p className="text-red-400">{error}</p>;
+  if (loading)
+    return (
+      <div className="py-2">
+        <SkeletonList rows={8} height="h-[68px]" />
+      </div>
+    );
 
   return (
     <ul className="flex flex-col gap-2 py-2">
@@ -106,7 +121,9 @@ export function Stages() {
         );
       })}
       {stages.length === 0 && (
-        <p className="text-slate-400">Noch keine Etappen.</p>
+        <p className="text-slate-400">
+          Noch keine {stagesNounPlural(tour.kind)}.
+        </p>
       )}
     </ul>
   );

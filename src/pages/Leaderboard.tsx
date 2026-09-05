@@ -13,8 +13,22 @@ import { stageHasResult } from "../lib/stageResult";
 import { tourTheme } from "../lib/theme";
 import { Confetti } from "../components/Confetti";
 import { PlayerStageBreakdown } from "../components/PlayerStageBreakdown";
+import { SkeletonList } from "../components/Skeleton";
 
 const COLS = 6;
+// header label -> title tooltip, so the abbreviations are self-explanatory
+const HEADERS: { label: string; title: string; align: "left" | "right" }[] = [
+  { label: "#", title: "Rang", align: "left" },
+  { label: "Name", title: "Spieler", align: "left" },
+  {
+    label: "Etap.",
+    title: "Etappen-Punkte (bestimmen den Rang)",
+    align: "right",
+  },
+  { label: "✓", title: "Richtig getippte Etappensieger", align: "right" },
+  { label: "Sond.", title: "Punkte aus Sonderwertungen", align: "right" },
+  { label: "Frag.", title: "Punkte aus Fragen", align: "right" },
+];
 type View = "tour" | "season";
 // Both leaderboard shapes share the columns we render.
 type Row = LeaderboardRow | SeasonLeaderboardRow;
@@ -26,6 +40,7 @@ export function Leaderboard() {
   const [seasonRows, setSeasonRows] = useState<SeasonLeaderboardRow[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
   const [riderName, setRiderName] = useState<Map<string, string>>(new Map());
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState(false);
 
@@ -37,12 +52,14 @@ export function Leaderboard() {
   const [tipError, setTipError] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    getLeaderboard(tour.id)
-      .then(setTourRows)
-      .catch((e) => setError(e.message));
-    getSeasonLeaderboard(tour.year)
-      .then(setSeasonRows)
-      .catch((e) => setError(e.message));
+    setLoading(true);
+    Promise.all([getLeaderboard(tour.id), getSeasonLeaderboard(tour.year)])
+      .then(([t, s]) => {
+        setTourRows(t);
+        setSeasonRows(s);
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
     Promise.all([listStages(tour.id), listRiders(tour.id)])
       .then(([s, r]) => {
         setStages(s);
@@ -120,16 +137,24 @@ export function Leaderboard() {
           : `Gesamtwertung ${tour.year} über alle Rennen.`}
       </p>
 
-      <div className="overflow-x-auto">
+      {loading && <SkeletonList rows={6} height="h-9" />}
+
+      <div className={`overflow-x-auto ${loading ? "hidden" : ""}`}>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-xs text-slate-500">
-              <th className="py-1 pr-2 text-left font-normal">#</th>
-              <th className="py-1 pr-2 text-left font-normal">Name</th>
-              <th className="py-1 pl-2 text-right font-normal">Etap.</th>
-              <th className="py-1 pl-2 text-right font-normal">✓</th>
-              <th className="py-1 pl-2 text-right font-normal">Sond.</th>
-              <th className="py-1 pl-2 text-right font-normal">Frag.</th>
+              {HEADERS.map((h) => (
+                <th
+                  key={h.label}
+                  title={h.title}
+                  scope="col"
+                  className={`py-1 font-normal ${
+                    h.align === "left" ? "pr-2 text-left" : "pl-2 text-right"
+                  }`}
+                >
+                  {h.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -207,7 +232,7 @@ export function Leaderboard() {
           </tbody>
         </table>
       </div>
-      {rows.length === 0 && (
+      {!loading && rows.length === 0 && (
         <p className="mt-2 text-slate-400">Noch keine Spieler.</p>
       )}
 
