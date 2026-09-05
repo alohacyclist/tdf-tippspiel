@@ -28,6 +28,80 @@ function toIso(local: string): string {
   return new Date(local).toISOString();
 }
 
+type AdminTab = "results" | "classifications" | "questions" | "tips" | "users";
+
+// Deterministic to-do list: what still needs an admin action right now. No
+// scraping — derived from the data already loaded (started stage without a
+// winner, past-deadline question without a result).
+function AdminTodo({
+  pendingStages,
+  pendingQuestions,
+  onPickStage,
+  onPickQuestion,
+}: {
+  pendingStages: Stage[];
+  pendingQuestions: QuestionWithOptions[];
+  onPickStage: (id: string) => void;
+  onPickQuestion: () => void;
+}) {
+  const count = pendingStages.length + pendingQuestions.length;
+  return (
+    <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <h2 className="mb-2 flex items-center gap-2 font-semibold text-slate-200">
+        Zu erledigen
+        {count > 0 && (
+          <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-contrast">
+            {count}
+          </span>
+        )}
+      </h2>
+      {count === 0 ? (
+        <p className="text-sm text-slate-500">Alles erledigt ✓</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {pendingStages.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-center justify-between gap-2 rounded-lg bg-slate-950 px-3 py-2"
+            >
+              <span className="min-w-0 truncate text-sm text-slate-200">
+                Etappe {s.number} ·{" "}
+                <span className="text-red-400">Sieger fehlt</span>
+                <span className="ml-1 text-xs text-slate-500">
+                  {formatLocal(s.start_time)}
+                </span>
+              </span>
+              <button
+                onClick={() => onPickStage(s.id)}
+                className="shrink-0 rounded-lg bg-accent px-3 py-1 text-xs font-semibold text-accent-contrast"
+              >
+                Eintragen
+              </button>
+            </div>
+          ))}
+          {pendingQuestions.map((q) => (
+            <div
+              key={q.id}
+              className="flex items-center justify-between gap-2 rounded-lg bg-slate-950 px-3 py-2"
+            >
+              <span className="min-w-0 truncate text-sm text-slate-200">
+                Frage · <span className="text-red-400">Ergebnis fehlt</span>
+                <span className="ml-1 text-xs text-slate-500">{q.prompt}</span>
+              </span>
+              <button
+                onClick={onPickQuestion}
+                className="shrink-0 rounded-lg bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100"
+              >
+                Öffnen
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Admin() {
   const { tour, isAdmin, canEdit } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
@@ -70,6 +144,49 @@ export function Admin() {
     [riders],
   );
 
+  const [tab, setTab] = useState<AdminTab>("results");
+  const [resultStageId, setResultStageId] = useState("");
+
+  // Started stages with no winner yet — the recurring "enter the result" task.
+  const pendingStages = useMemo(
+    () =>
+      stages.filter(
+        (s) =>
+          s.status !== "void" &&
+          isPast(s.start_time) &&
+          !s.winner_rider_id &&
+          !s.winner_team,
+      ),
+    [stages],
+  );
+  const pendingQuestions = useMemo(
+    () =>
+      questions.filter((q) => {
+        const dl = q.stage_id
+          ? (stageById.get(q.stage_id)?.start_time ?? null)
+          : q.deadline;
+        return isPast(dl) && !q.is_resolved;
+      }),
+    [questions, stageById],
+  );
+
+  function openStageResult(id: string) {
+    setResultStageId(id);
+    setTab("results");
+  }
+
+  const tabs: { key: AdminTab; label: string }[] = [
+    { key: "results", label: "Ergebnisse" },
+    { key: "classifications", label: "Wertungen" },
+    { key: "questions", label: "Fragen" },
+    ...(isAdmin
+      ? [
+          { key: "tips" as AdminTab, label: "Tipps" },
+          { key: "users" as AdminTab, label: "Nutzer" },
+        ]
+      : []),
+  ];
+
   if (!canEdit) return <p className="py-4 text-red-400">Kein Zugriff.</p>;
 
   return (
@@ -80,52 +197,93 @@ export function Admin() {
       <h1 className="mt-2 text-xl font-bold text-slate-100">Admin</h1>
       {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
 
-      <CreateClassification tourId={tour.id} stages={stages} onDone={reload} />
-
-      <h2 className="mb-2 mt-8 font-semibold text-slate-200">
-        Wertungen verwalten
-      </h2>
-      <div className="flex flex-col gap-2">
-        {cls.map((c) => (
-          <ClassificationRow
-            key={c.id}
-            c={c}
-            riders={activeRiders}
-            deadline={
-              c.stage_id
-                ? (stageById.get(c.stage_id)?.start_time ?? null)
-                : c.deadline
-            }
-            canDelete={isAdmin}
-            onDone={reload}
-          />
-        ))}
-        {cls.length === 0 && (
-          <p className="text-sm text-slate-400">Noch keine Wertungen.</p>
-        )}
-      </div>
-
-      <StageResult stages={stages} riders={activeRiders} onDone={reload} />
-
-      <QuestionsSection
-        tourId={tour.id}
-        stages={stages}
-        questions={questions}
-        stageById={stageById}
-        isAdmin={isAdmin}
-        onDone={reload}
+      <AdminTodo
+        pendingStages={pendingStages}
+        pendingQuestions={pendingQuestions}
+        onPickStage={openStageResult}
+        onPickQuestion={() => setTab("questions")}
       />
 
-      {isAdmin && (
-        <StageTipBackfill
-          profiles={profiles}
-          stages={stages}
-          riders={riders}
-          onDone={reload}
-        />
-      )}
+      <div className="mt-6 flex gap-1 overflow-x-auto border-b border-slate-800">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`shrink-0 border-b-2 px-3 py-2 text-sm ${
+              tab === t.key
+                ? "border-accent text-accent"
+                : "border-transparent text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      {isAdmin && <UsersSection profiles={profiles} onDone={reload} />}
+      <div className="mt-4">
+        {tab === "results" && (
+          <StageResult
+            stages={stages}
+            riders={activeRiders}
+            stageId={resultStageId}
+            onStageId={setResultStageId}
+            onDone={reload}
+          />
+        )}
+
+        {tab === "classifications" && (
+          <>
+            <CreateClassification
+              tourId={tour.id}
+              stages={stages}
+              onDone={reload}
+            />
+            <div className="mt-4 flex flex-col gap-2">
+              {cls.map((c) => (
+                <ClassificationRow
+                  key={c.id}
+                  c={c}
+                  riders={activeRiders}
+                  deadline={
+                    c.stage_id
+                      ? (stageById.get(c.stage_id)?.start_time ?? null)
+                      : c.deadline
+                  }
+                  canDelete={isAdmin}
+                  onDone={reload}
+                />
+              ))}
+              {cls.length === 0 && (
+                <p className="text-sm text-slate-400">Noch keine Wertungen.</p>
+              )}
+            </div>
+          </>
+        )}
+
+        {tab === "questions" && (
+          <QuestionsSection
+            tourId={tour.id}
+            stages={stages}
+            questions={questions}
+            stageById={stageById}
+            isAdmin={isAdmin}
+            onDone={reload}
+          />
+        )}
+
+        {tab === "tips" && isAdmin && (
+          <StageTipBackfill
+            profiles={profiles}
+            stages={stages}
+            riders={riders}
+            onDone={reload}
+          />
+        )}
+
+        {tab === "users" && isAdmin && (
+          <UsersSection profiles={profiles} onDone={reload} />
+        )}
+      </div>
     </div>
   );
 }
@@ -617,18 +775,26 @@ function ClassificationRow({
 function StageResult({
   stages,
   riders,
+  stageId,
+  onStageId,
   onDone,
 }: {
   stages: Stage[];
   riders: Rider[];
+  stageId: string;
+  onStageId: (id: string) => void;
   onDone: () => void;
 }) {
-  const [stageId, setStageId] = useState("");
   const [rider, setRider] = useState<string | null>(null);
   const [team, setTeam] = useState("");
   const [close, setClose] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRider(null);
+    setTeam("");
+  }, [stageId]);
 
   const stage = stages.find((s) => s.id === stageId) ?? null;
   const isTtt = stage?.type === "ttt";
@@ -671,11 +837,7 @@ function StageResult({
       <h2 className="font-semibold text-slate-200">Etappen-Ergebnis</h2>
       <select
         value={stageId}
-        onChange={(e) => {
-          setStageId(e.target.value);
-          setRider(null);
-          setTeam("");
-        }}
+        onChange={(e) => onStageId(e.target.value)}
         className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
       >
         <option value="">Etappe wählen…</option>
