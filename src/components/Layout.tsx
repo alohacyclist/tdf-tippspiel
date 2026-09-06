@@ -2,12 +2,14 @@ import { NavLink, Outlet } from "react-router-dom";
 import { signOut } from "../lib/supabase";
 import type { AppCtx } from "../lib/appContext";
 import { stagesNounPlural } from "../lib/stageLabel";
+import { tourTheme } from "../lib/theme";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `text-sm ${isActive ? "text-accent" : "text-slate-400 hover:text-slate-200"}`;
 
 export function Layout({ ctx }: { ctx: AppCtx }) {
   const isGrandTour = ctx.tour.kind === "grand_tour";
+  const gradient = tourTheme(ctx.tour.pcs_slug).titleGradient;
   const tabs = [
     { to: "/", label: stagesNounPlural(ctx.tour.kind), end: true },
     ...(isGrandTour
@@ -19,6 +21,14 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
   return (
     <div className="mx-auto flex min-h-full max-w-xl flex-col md:max-w-4xl">
       <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-800/60 bg-slate-950/95 px-4 py-3 backdrop-blur">
+        {/* races without a single identity colour (rainbow jersey) get a gradient rule */}
+        {gradient && (
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-0.5"
+            style={{ background: gradient }}
+          />
+        )}
         <div className="flex min-w-0 items-center gap-2">
           {ctx.tours.length > 1 ? (
             <select
@@ -34,7 +44,10 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
               ))}
             </select>
           ) : (
-            <span className="truncate text-lg font-bold text-accent">
+            <span
+              className={`truncate text-lg font-bold ${gradient ? "bg-clip-text text-transparent" : "text-accent"}`}
+              style={gradient ? { backgroundImage: gradient } : undefined}
+            >
               {ctx.tour.name}
             </span>
           )}
