@@ -91,7 +91,7 @@ export function Stages() {
               to={`/stage/${s.id}`}
               className="relative grid grid-cols-[auto_1fr_auto] items-center gap-3 overflow-hidden py-3 hover:bg-surface2"
             >
-              <StageWatermark raceSlug={tour.pcs_slug} stageNumber={s.number} />
+              <StageWatermark type={s.type} />
               {/* stage number as a race plate; one-day races have nothing to number */}
               {!oneDay && (
                 <div className="relative w-11 text-center">
