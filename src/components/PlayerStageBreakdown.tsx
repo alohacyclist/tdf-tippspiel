@@ -22,7 +22,7 @@ export function PlayerStageBreakdown({
   loading: boolean;
   error?: string;
 }) {
-  if (error) return <p className="py-2 text-xs text-red-400">{error}</p>;
+  if (error) return <p className="py-2 text-xs text-miss">{error}</p>;
   if (loading || !tips)
     return (
       <div className="py-2">
@@ -31,14 +31,14 @@ export function PlayerStageBreakdown({
     );
   if (resolvedStages.length === 0)
     return (
-      <p className="py-2 text-xs text-slate-500">Noch keine Ergebnisse.</p>
+      <p className="py-2 text-xs text-faint">Noch keine Ergebnisse.</p>
     );
 
   const tipByStage = new Map(tips.map((t) => [t.stage_id, t]));
 
   return (
-    <div className="rounded-lg bg-slate-900/60 px-3 py-2">
-      <div className="flex items-baseline gap-2 border-b border-slate-800 pb-1 text-[10px] uppercase tracking-wide text-slate-600">
+    <div className="rounded-lg bg-surface2 px-3 py-2">
+      <div className="flex items-baseline gap-2 border-b border-line pb-1 text-[10px] uppercase tracking-wide text-faint">
         <span className="w-8 shrink-0">Et.</span>
         <span className="flex-1">Sieger</span>
         <span className="flex-1 text-right">Tipp</span>
@@ -51,14 +51,14 @@ export function PlayerStageBreakdown({
           : "kein Tipp";
         const correct = tip ? stageWinnerMatch(s, tip) : false;
         const tipColor = correct
-          ? "text-green-400"
+          ? "text-hit"
           : tip
-            ? "text-red-400"
-            : "text-slate-600";
+            ? "text-miss"
+            : "text-faint";
         return (
           <div key={s.id} className="flex items-baseline gap-2 py-1 text-xs">
-            <span className="w-8 shrink-0 text-slate-500">{s.number}</span>
-            <span className="flex-1 truncate text-slate-300">{winner}</span>
+            <span className="w-8 shrink-0 text-faint">{s.number}</span>
+            <span className="flex-1 truncate text-muted">{winner}</span>
             <span className={`flex-1 truncate text-right ${tipColor}`}>
               {tipLabel}
             </span>
@@ -67,7 +67,7 @@ export function PlayerStageBreakdown({
       })}
       <Link
         to={`/spieler/${userId}`}
-        className="mt-1 inline-block text-xs text-slate-500 hover:text-slate-300"
+        className="mt-1 inline-block text-xs text-faint hover:text-muted"
       >
         Alle Tipps →
       </Link>

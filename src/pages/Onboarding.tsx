@@ -37,7 +37,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           placeholder="z.B. Bergziege"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent"
+          className="rounded-lg border border-line bg-surface px-3 py-2 text-ink outline-none focus:border-accent"
         />
         <button
           disabled={busy}
@@ -45,7 +45,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         >
           Weiter
         </button>
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-miss">{error}</p>}
       </form>
     </div>
   )

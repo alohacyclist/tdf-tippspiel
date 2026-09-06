@@ -73,10 +73,10 @@ export function ClassificationCard({
   const slotLabel = (slot: number) => (c.ordered ? `Platz ${slot}` : c.name);
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+    <div className="rounded-xl border border-line bg-surface p-4">
       <div className="mb-1 flex items-baseline justify-between">
-        <h3 className="font-semibold text-slate-100">{c.name}</h3>
-        <span className="text-xs text-slate-500">
+        <h3 className="font-semibold text-ink">{c.name}</h3>
+        <span className="text-xs text-faint">
           {past ? "aufgedeckt" : `bis ${formatLocal(effectiveDeadline)}`}
         </span>
       </div>
@@ -92,7 +92,7 @@ export function ClassificationCard({
             return (
               <div key={slot}>
                 {c.ordered && (
-                  <div className="mb-1 text-xs text-slate-400">
+                  <div className="mb-1 text-xs text-muted">
                     {slotLabel(slot)}
                   </div>
                 )}
@@ -109,9 +109,9 @@ export function ClassificationCard({
       ) : past ? (
         <RevealList reveal={reveal} ordered={c.ordered} />
       ) : (
-        <p className="text-sm text-slate-400">Noch nicht geöffnet.</p>
+        <p className="text-sm text-muted">Noch nicht geöffnet.</p>
       )}
-      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-sm text-miss">{error}</p>}
     </div>
   );
 }
@@ -130,18 +130,18 @@ function RevealList({
     byPlayer.set(t.user_id, arr);
   }
   if (byPlayer.size === 0)
-    return <p className="text-sm text-slate-400">Keine Tipps.</p>;
+    return <p className="text-sm text-muted">Keine Tipps.</p>;
   return (
     <ul className="mt-1 flex flex-col gap-1">
       {[...byPlayer.values()].map((tips) => (
         <li
           key={tips[0].user_id}
-          className="rounded-lg bg-slate-950 px-3 py-2 text-sm"
+          className="rounded-lg bg-paper px-3 py-2 text-sm"
         >
-          <span className="text-slate-400">
+          <span className="text-muted">
             {tips[0].player?.display_name ?? "—"}:{" "}
           </span>
-          <span className="text-slate-200">
+          <span className="text-ink">
             {tips
               .sort((a, b) => a.slot - b.slot)
               .map((t) =>

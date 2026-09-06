@@ -25,16 +25,16 @@ export function Login({ expired = false }: { expired?: boolean }) {
       <h1 className="mb-1 text-2xl font-bold text-accent">
         Grand-Tour-Tippspiel
       </h1>
-      <p className="mb-6 text-slate-400">Anmelden per Magic-Link.</p>
+      <p className="mb-6 text-muted">Anmelden per Magic-Link.</p>
 
       {expired && !sent && (
-        <p className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+        <p className="mb-4 rounded-lg border border-warn/40 bg-warn/10 p-3 text-sm text-warn">
           Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.
         </p>
       )}
 
       {sent ? (
-        <p className="rounded-lg bg-slate-800 p-4 text-slate-200">
+        <p className="rounded-lg bg-surface2 p-4 text-ink">
           Link gesendet an <strong>{email}</strong>. Postfach prüfen.
         </p>
       ) : (
@@ -46,7 +46,7 @@ export function Login({ expired = false }: { expired?: boolean }) {
             placeholder="deine@email.de"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent"
+            className="rounded-lg border border-line bg-surface px-3 py-2 text-ink outline-none focus:border-accent"
           />
           <button
             disabled={busy}
@@ -54,7 +54,7 @@ export function Login({ expired = false }: { expired?: boolean }) {
           >
             {busy ? "…" : "Link senden"}
           </button>
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-miss">{error}</p>}
         </form>
       )}
     </div>

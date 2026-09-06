@@ -21,7 +21,7 @@ export function StageProfile({
         href={pcs}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-4 block rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-accent"
+        className="mt-4 block rounded-lg border border-line bg-surface px-3 py-2 text-sm text-accent"
       >
         Höhenprofil & Details auf procyclingstats ansehen ↗
       </a>
@@ -40,7 +40,7 @@ export function StageProfile({
         alt={`Höhenprofil Etappe ${stageNumber}`}
         loading="lazy"
         onError={() => setFailed(true)}
-        className="w-full rounded-lg border border-slate-800 bg-white"
+        className="w-full rounded-lg border border-line bg-white"
       />
     </a>
   );

@@ -113,15 +113,15 @@ export function QuestionCard({
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+    <div className="rounded-xl border border-line bg-surface p-4">
       <div className="mb-1 flex items-baseline justify-between gap-2">
-        <h3 className="font-semibold text-slate-100">{q.prompt}</h3>
-        <span className="shrink-0 text-xs text-slate-500">
+        <h3 className="font-semibold text-ink">{q.prompt}</h3>
+        <span className="shrink-0 text-xs text-faint">
           {past ? "aufgedeckt" : `bis ${formatLocal(effectiveDeadline)}`}
         </span>
       </div>
       {q.help_text && (
-        <p className="mb-2 text-xs text-slate-400">{q.help_text}</p>
+        <p className="mb-2 text-xs text-muted">{q.help_text}</p>
       )}
 
       {editable ? (
@@ -134,7 +134,7 @@ export function QuestionCard({
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm ${
                   boolValue === v
                     ? "border-accent bg-accent/10 text-accent"
-                    : "border-slate-700 text-slate-200"
+                    : "border-line text-ink"
                 }`}
               >
                 {v ? "Ja" : "Nein"}
@@ -150,7 +150,7 @@ export function QuestionCard({
                 className={`rounded-lg border px-3 py-2 text-left text-sm ${
                   optionId === o.id
                     ? "border-accent bg-accent/10 text-accent"
-                    : "border-slate-700 text-slate-200"
+                    : "border-line text-ink"
                 }`}
               >
                 {o.label}
@@ -166,9 +166,9 @@ export function QuestionCard({
           result={result}
         />
       ) : (
-        <p className="text-sm text-slate-400">Noch nicht geöffnet.</p>
+        <p className="text-sm text-muted">Noch nicht geöffnet.</p>
       )}
-      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-sm text-miss">{error}</p>}
     </div>
   );
 }
@@ -210,7 +210,7 @@ function QuestionReveal({
   return (
     <div className="mt-1">
       {correctLabel && (
-        <p className="mb-2 rounded-lg bg-green-950 p-2 text-sm text-green-300">
+        <p className="mb-2 rounded-lg bg-hit/10 p-2 text-sm text-hit">
           Richtig: {correctLabel}
         </p>
       )}
@@ -218,14 +218,14 @@ function QuestionReveal({
         {reveal.map((a) => (
           <li
             key={a.id}
-            className="flex justify-between rounded-lg bg-slate-950 px-3 py-2 text-sm"
+            className="flex justify-between rounded-lg bg-paper px-3 py-2 text-sm"
           >
-            <span className="text-slate-400">
+            <span className="text-muted">
               {a.player?.display_name ?? "—"}
             </span>
             <span
               className={
-                isCorrect(a) ? "font-semibold text-green-400" : "text-slate-200"
+                isCorrect(a) ? "font-semibold text-hit" : "text-ink"
               }
             >
               {answerLabel(a)}
@@ -233,7 +233,7 @@ function QuestionReveal({
           </li>
         ))}
         {reveal.length === 0 && (
-          <p className="text-sm text-slate-400">Keine Antworten.</p>
+          <p className="text-sm text-muted">Keine Antworten.</p>
         )}
       </ul>
     </div>

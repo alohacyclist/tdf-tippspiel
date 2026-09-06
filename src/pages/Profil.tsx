@@ -68,14 +68,14 @@ export function Profil() {
     <div className="py-3">
       <button
         onClick={() => navigate(-1)}
-        className="text-sm text-slate-400 hover:text-slate-200"
+        className="text-sm text-muted hover:text-ink"
       >
         ← Zurück
       </button>
-      <h1 className="mt-2 text-xl font-bold text-slate-100">Profil</h1>
+      <h1 className="mt-2 text-xl font-bold text-ink">Profil</h1>
 
       <form onSubmit={submit} className="mt-5 flex flex-col gap-3">
-        <label className="text-sm font-semibold text-slate-200">
+        <label className="text-sm font-semibold text-ink">
           Anzeigename
         </label>
         <input
@@ -88,7 +88,7 @@ export function Profil() {
             setSaved(false);
           }}
           disabled={!loaded}
-          className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent disabled:opacity-50"
+          className="rounded-lg border border-line bg-surface px-3 py-2 text-ink outline-none focus:border-accent disabled:opacity-50"
         />
         <button
           disabled={busy || !dirty}
@@ -96,8 +96,8 @@ export function Profil() {
         >
           {saved ? "Gespeichert ✓" : "Speichern"}
         </button>
-        {error && <p className="text-sm text-red-400">{error}</p>}
-        <p className="text-xs text-slate-500">
+        {error && <p className="text-sm text-miss">{error}</p>}
+        <p className="text-xs text-faint">
           2–24 Zeichen. Der Name ist eindeutig (Groß-/Kleinschreibung egal).
         </p>
       </form>

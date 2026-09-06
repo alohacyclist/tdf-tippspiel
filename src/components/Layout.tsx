@@ -5,7 +5,7 @@ import { stagesNounPlural } from "../lib/stageLabel";
 import { tourTheme } from "../lib/theme";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
-  `text-sm ${isActive ? "text-accent" : "text-slate-400 hover:text-slate-200"}`;
+  `text-sm ${isActive ? "text-accent" : "text-muted hover:text-ink"}`;
 
 export function Layout({ ctx }: { ctx: AppCtx }) {
   const isGrandTour = ctx.tour.kind === "grand_tour";
@@ -20,7 +20,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
 
   return (
     <div className="mx-auto flex min-h-full max-w-xl flex-col md:max-w-4xl">
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-800/60 bg-slate-950/95 px-4 py-3 backdrop-blur">
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-line bg-paper/95 px-4 py-3 backdrop-blur">
         {/* races without a single identity colour (rainbow jersey) get a gradient rule */}
         {gradient && (
           <span
@@ -34,7 +34,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
             <select
               value={ctx.tour.id}
               onChange={(e) => ctx.setTour(e.target.value)}
-              className="max-w-[11rem] truncate rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm font-bold text-accent"
+              className="max-w-[11rem] truncate rounded-lg border border-line bg-surface px-2 py-1 text-sm font-bold text-accent"
               aria-label="Tour wählen"
             >
               {ctx.tours.map((t) => (
@@ -45,7 +45,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
             </select>
           ) : (
             <span
-              className={`truncate text-lg font-bold ${gradient ? "bg-clip-text text-transparent" : "text-accent"}`}
+              className={`font-display truncate text-xl font-bold uppercase tracking-tight ${gradient ? "bg-clip-text text-transparent" : "text-ink"}`}
               style={gradient ? { backgroundImage: gradient } : undefined}
             >
               {ctx.tour.name}
@@ -57,7 +57,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
                 !!ctx.tour.starts_at &&
                 Date.parse(ctx.tour.starts_at) > Date.now();
               return (
-                <span className="shrink-0 rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-medium uppercase text-slate-300">
+                <span className="label shrink-0 border border-line px-1.5 py-0.5 text-muted">
                   {upcoming ? "Vorschau" : "Archiv"}
                 </span>
               );
@@ -72,7 +72,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
                 {t.label}
               </NavLink>
             ))}
-            <span className="h-4 w-px bg-slate-700" />
+            <span className="h-4 w-px bg-surface2" />
           </nav>
           {ctx.canEdit && (
             <NavLink to="/admin" className={navClass}>
@@ -83,7 +83,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
             Profil
           </NavLink>
           <button
-            className="text-sm text-slate-400 hover:text-slate-200"
+            className="text-sm text-muted hover:text-ink"
             onClick={() => signOut()}
           >
             Abmelden
@@ -95,7 +95,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
         <Outlet context={ctx} />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 mx-auto flex max-w-xl border-t border-slate-800 bg-slate-950/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 mx-auto flex max-w-xl border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {tabs.map((t) => (
           <NavLink
             key={t.to}
@@ -103,7 +103,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
             end={t.end}
             className={({ isActive }) =>
               `flex-1 py-3 text-center text-sm ${
-                isActive ? "text-accent" : "text-slate-400"
+                isActive ? "text-accent" : "text-muted"
               }`
             }
           >

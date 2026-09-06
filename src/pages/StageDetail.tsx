@@ -164,7 +164,7 @@ export function StageDetail() {
     }
   }
 
-  if (error) return <p className="py-4 text-red-400">{error}</p>;
+  if (error) return <p className="py-4 text-miss">{error}</p>;
   if (!stage)
     return (
       <div className="py-4">
@@ -179,7 +179,7 @@ export function StageDetail() {
   return (
     <div className="py-3">
       <div className="flex items-center justify-between">
-        <Link to="/" className="text-sm text-slate-400">
+        <Link to="/" className="text-sm text-muted">
           ← {stagesNounPlural(tour.kind)}
         </Link>
         <div className="flex gap-3 text-sm">
@@ -188,18 +188,18 @@ export function StageDetail() {
               ← Etappe {prev.number}
             </Link>
           ) : (
-            <span className="text-slate-600">← Etappe</span>
+            <span className="text-faint">← Etappe</span>
           )}
           {next ? (
             <Link to={`/stage/${next.id}`} className="text-accent">
               Etappe {next.number} →
             </Link>
           ) : (
-            <span className="text-slate-600">Etappe →</span>
+            <span className="text-faint">Etappe →</span>
           )}
         </div>
       </div>
-      <h1 className="mt-2 text-xl font-bold text-slate-100">
+      <h1 className="mt-2 text-xl font-bold text-ink">
         {stageLabel(tour.kind, stage)}
         {stage.start_city && stage.finish_city
           ? ` · ${stage.start_city} → ${stage.finish_city}`
@@ -210,7 +210,7 @@ export function StageDetail() {
           </span>
         )}
       </h1>
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-muted">
         Start: {formatLocal(stage.start_time)}{" "}
         {!started && (
           <>
@@ -219,7 +219,7 @@ export function StageDetail() {
         )}
       </p>
 
-      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-400">
+      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
         {stage.type && <span>{TYPE_LABEL[stage.type]}</span>}
         {stage.distance_km != null && <span>{stage.distance_km} km</span>}
       </div>
@@ -233,13 +233,13 @@ export function StageDetail() {
 
       {!started ? (
         <div className="mt-5">
-          <h2 className="mb-2 font-semibold text-slate-200">
+          <h2 className="mb-2 font-semibold text-ink">
             {isTtt
               ? "Dein Team-Tipp (Sieger-Mannschaft)"
               : "Dein Etappensieger-Tipp"}
           </h2>
           {dnf && (
-            <p className="mb-2 rounded-lg bg-red-950 p-2 text-sm text-red-300">
+            <p className="mb-2 rounded-lg bg-miss/10 p-2 text-sm text-miss">
               Dein getippter Fahrer ist ausgeschieden — bitte neu tippen.
             </p>
           )}
@@ -247,7 +247,7 @@ export function StageDetail() {
             <select
               value={teamPick ?? ""}
               onChange={(e) => setTeamPick(e.target.value || null)}
-              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-accent"
+              className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink outline-none focus:border-accent"
             >
               <option value="">Mannschaft wählen…</option>
               {teams.map((t) => (
@@ -270,13 +270,13 @@ export function StageDetail() {
           >
             {saved ? "Gespeichert ✓" : "Tipp speichern"}
           </button>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-faint">
             Änderbar bis zum Start. Fremde Tipps werden erst ab Start sichtbar.
           </p>
         </div>
       ) : (
         <div className="mt-5">
-          <h2 className="mb-2 font-semibold text-slate-200">
+          <h2 className="mb-2 font-semibold text-ink">
             Tipps & Ergebnis
           </h2>
           <a
@@ -294,12 +294,12 @@ export function StageDetail() {
           </a>
           {isTtt
             ? stage.winner_team && (
-                <p className="mb-3 rounded-lg bg-green-950 p-2 text-sm text-green-300">
+                <p className="mb-3 rounded-lg bg-hit/10 p-2 text-sm text-hit">
                   Sieger-Mannschaft: {stage.winner_team}
                 </p>
               )
             : stage.winner_rider_id && (
-                <p className="mb-3 rounded-lg bg-green-950 p-2 text-sm text-green-300">
+                <p className="mb-3 rounded-lg bg-hit/10 p-2 text-sm text-hit">
                   Sieger: {ridersById.get(stage.winner_rider_id)?.name ?? "—"}
                 </p>
               )}
@@ -312,16 +312,16 @@ export function StageDetail() {
               return (
                 <li
                   key={t.id}
-                  className="flex justify-between rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+                  className="flex justify-between rounded-lg border border-line bg-surface px-3 py-2"
                 >
-                  <span className="text-slate-300">
+                  <span className="text-muted">
                     {t.player?.display_name ?? "—"}
                   </span>
                   <span
                     className={
                       correct
-                        ? "font-semibold text-green-400"
-                        : "text-slate-200"
+                        ? "font-semibold text-hit"
+                        : "text-ink"
                     }
                   >
                     {label}
@@ -330,7 +330,7 @@ export function StageDetail() {
               );
             })}
             {reveal.length === 0 && (
-              <p className="text-slate-400">Keine Tipps abgegeben.</p>
+              <p className="text-muted">Keine Tipps abgegeben.</p>
             )}
           </ul>
         </div>
@@ -338,7 +338,7 @@ export function StageDetail() {
 
       {stageClassifications.length > 0 && (
         <div className="mt-6 flex flex-col gap-3">
-          <h2 className="font-semibold text-slate-200">Etappen-Wertungen</h2>
+          <h2 className="font-semibold text-ink">Etappen-Wertungen</h2>
           {stageClassifications.map((c) => (
             <ClassificationCard
               key={c.id}
@@ -355,7 +355,7 @@ export function StageDetail() {
 
       {stageQuestions.length > 0 && (
         <div className="mt-6 flex flex-col gap-3">
-          <h2 className="font-semibold text-slate-200">Etappen-Fragen</h2>
+          <h2 className="font-semibold text-ink">Etappen-Fragen</h2>
           {stageQuestions.map((q) => (
             <QuestionCard
               key={q.id}

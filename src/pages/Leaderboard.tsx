@@ -99,7 +99,7 @@ export function Leaderboard() {
       .finally(() => setLoadingUser((l) => (l === userId ? null : l)));
   }
 
-  if (error) return <p className="py-4 text-red-400">{error}</p>;
+  if (error) return <p className="py-4 text-miss">{error}</p>;
 
   // Only the single-tour view drills into per-stage tips; the season view aggregates
   // across events, so its rows are not expandable.
@@ -113,17 +113,19 @@ export function Leaderboard() {
   return (
     <div className="py-3">
       {celebrate && <Confetti colors={tourTheme(tour.pcs_slug).confetti} />}
-      <h1 className="mb-2 text-xl font-bold text-slate-100">Rangliste</h1>
+      <h1 className="font-display mb-2 text-2xl font-bold tracking-tight text-ink">
+        Rangliste
+      </h1>
 
       <div className="mb-2 flex gap-1">
         {(["tour", "season"] as const).map((v) => (
           <button
             key={v}
             onClick={() => setView(v)}
-            className={`rounded-lg px-3 py-1 text-xs ${
+            className={`label px-3 py-1.5 ${
               view === v
-                ? "bg-accent font-semibold text-accent-contrast"
-                : "bg-slate-800 text-slate-300"
+                ? "bg-accent-solid font-semibold text-accent-contrast"
+                : "bg-surface2 text-muted"
             }`}
           >
             {v === "tour" ? "Diese Tour" : `Saison ${tour.year}`}
@@ -131,7 +133,7 @@ export function Leaderboard() {
         ))}
       </div>
 
-      <p className="mb-3 text-xs text-slate-500">
+      <p className="mb-3 text-xs text-faint">
         {view === "tour"
           ? "Rang nach Etappen-Punkten. Zeile antippen für die Etappen-Tipps."
           : `Gesamtwertung ${tour.year} über alle Rennen.`}
@@ -142,13 +144,13 @@ export function Leaderboard() {
       <div className={`overflow-x-auto ${loading ? "hidden" : ""}`}>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-800 text-xs text-slate-500">
+            <tr className="border-b-2 border-ink text-faint">
               {HEADERS.map((h) => (
                 <th
                   key={h.label}
                   title={h.title}
                   scope="col"
-                  className={`py-1 font-normal ${
+                  className={`label py-2 font-medium ${
                     h.align === "left" ? "pr-2 text-left" : "pl-2 text-right"
                   }`}
                 >
@@ -181,34 +183,42 @@ export function Leaderboard() {
                     role={expandable ? "button" : undefined}
                     tabIndex={expandable ? 0 : undefined}
                     aria-expanded={expandable ? open : undefined}
-                    className={`border-b border-slate-900 ${
+                    className={`border-b border-line ${
                       expandable
-                        ? "cursor-pointer hover:bg-slate-900 focus:bg-slate-900 focus:outline-none"
+                        ? "cursor-pointer hover:bg-surface focus:bg-surface focus:outline-none"
                         : ""
                     }`}
                   >
-                    <td className="py-2 pr-2 text-slate-500">{lastRank}</td>
-                    <td className="py-2 pr-2 text-slate-200">
+                    <td className="py-2.5 pr-2">
+                      {/* leader wears the jersey colour, like a race plate */}
+                      <span
+                        className={`plate inline-flex h-6 min-w-[1.6rem] items-center justify-center px-1 text-base ${
+                          lastRank === 1 && r.stage_points > 0
+                            ? "bg-accent-solid text-accent-contrast"
+                            : "text-muted"
+                        }`}
+                      >
+                        {lastRank}
+                      </span>
+                    </td>
+                    <td className="py-2.5 pr-2 font-medium text-ink">
                       {expandable && (
-                        <span className="mr-1 inline-block text-slate-600">
+                        <span className="mr-1 inline-block text-faint">
                           {open ? "▾" : "▸"}
                         </span>
                       )}
                       {r.display_name ?? "—"}
-                      {lastRank === 1 && r.stage_points > 0 && (
-                        <span className="ml-1">🍺</span>
-                      )}
                     </td>
-                    <td className="py-2 pl-2 text-right font-semibold text-accent">
+                    <td className="data py-2.5 pl-2 text-right font-semibold text-accent">
                       {r.stage_points}
                     </td>
-                    <td className="py-2 pl-2 text-right text-slate-400">
+                    <td className="data py-2.5 pl-2 text-right text-muted">
                       {r.correct_winners}
                     </td>
-                    <td className="py-2 pl-2 text-right text-slate-300">
+                    <td className="data py-2.5 pl-2 text-right text-muted">
                       {r.special_points}
                     </td>
-                    <td className="py-2 pl-2 text-right text-slate-300">
+                    <td className="data py-2.5 pl-2 text-right text-muted">
                       {r.question_points}
                     </td>
                   </tr>
@@ -233,10 +243,10 @@ export function Leaderboard() {
         </table>
       </div>
       {!loading && rows.length === 0 && (
-        <p className="mt-2 text-slate-400">Noch keine Spieler.</p>
+        <p className="mt-2 text-muted">Noch keine Spieler.</p>
       )}
 
-      <p className="mt-3 text-xs text-slate-600">
+      <p className="mt-3 text-xs text-faint">
         Etap. = Etappen-Punkte (Rang) · ✓ = richtige Etappen · Sond. =
         Sonderwertungen · Frag. = Fragen
       </p>

@@ -35,7 +35,7 @@ export function QuestionsSection({
     <>
       <CreateQuestion tourId={tourId} stages={stages} onDone={onDone} />
 
-      <h2 className="mb-2 mt-8 font-semibold text-slate-200">
+      <h2 className="mb-2 mt-8 font-semibold text-ink">
         Fragen verwalten
       </h2>
       <div className="flex flex-col gap-2">
@@ -53,7 +53,7 @@ export function QuestionsSection({
           />
         ))}
         {questions.length === 0 && (
-          <p className="text-sm text-slate-400">Noch keine Fragen.</p>
+          <p className="text-sm text-muted">Noch keine Fragen.</p>
         )}
       </div>
     </>
@@ -122,14 +122,14 @@ function CreateQuestion({
   return (
     <form
       onSubmit={submit}
-      className="mt-8 flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-4"
+      className="mt-8 flex flex-col gap-2 rounded-xl border border-line bg-surface p-4"
     >
-      <h2 className="font-semibold text-slate-200">Frage anlegen</h2>
+      <h2 className="font-semibold text-ink">Frage anlegen</h2>
       <div className="flex gap-2">
         <select
           value={kind}
           onChange={(e) => setKind(e.target.value as "boolean" | "choice")}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         >
           <option value="boolean">Ja / Nein</option>
           <option value="choice">Multiple-Choice</option>
@@ -139,23 +139,23 @@ function CreateQuestion({
           placeholder="Punkte"
           value={points}
           onChange={(e) => setPoints(e.target.value)}
-          className="w-24 rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="w-24 rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         />
       </div>
       <input
         placeholder="Frage (Anzeige)"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
+        className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-accent"
       />
       <input
         placeholder="Hilfetext (optional)"
         value={help}
         onChange={(e) => setHelp(e.target.value)}
-        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+        className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
       />
 
-      <div className="mt-1 flex gap-4 text-sm text-slate-300">
+      <div className="mt-1 flex gap-4 text-sm text-muted">
         <label className="flex items-center gap-1">
           <input
             type="radio"
@@ -178,13 +178,13 @@ function CreateQuestion({
           type="datetime-local"
           value={deadline}
           onChange={(e) => setDeadline(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         />
       ) : (
         <select
           value={stageId}
           onChange={(e) => setStageId(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         >
           <option value="">Etappe wählen…</option>
           {stages.map((s) => (
@@ -197,7 +197,7 @@ function CreateQuestion({
 
       {kind === "choice" && (
         <div className="flex flex-col gap-1">
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-muted">
             Antwortmöglichkeiten (mind. 2)
           </div>
           {options.map((opt, i) => (
@@ -210,13 +210,13 @@ function CreateQuestion({
                     options.map((o, j) => (j === i ? e.target.value : o)),
                   )
                 }
-                className="flex-1 rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                className="flex-1 rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
               />
               {options.length > 2 && (
                 <button
                   type="button"
                   onClick={() => setOptions(options.filter((_, j) => j !== i))}
-                  className="rounded-lg border border-slate-700 px-2 text-sm text-red-400"
+                  className="rounded-lg border border-line px-2 text-sm text-miss"
                 >
                   ✕
                 </button>
@@ -239,7 +239,7 @@ function CreateQuestion({
       >
         Anlegen
       </button>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-miss">{error}</p>}
     </form>
   );
 }
@@ -284,11 +284,11 @@ function QuestionRow({
   }
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2">
+    <div className="rounded-lg border border-line bg-surface px-3 py-2">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm text-slate-200">
+        <span className="text-sm text-ink">
           {q.prompt}
-          <span className="ml-2 text-xs text-slate-500">
+          <span className="ml-2 text-xs text-faint">
             {q.kind === "boolean" ? "Ja/Nein" : "Choice"} ·{" "}
             {q.stage_id ? "Etappe" : "Tour"} · bis {formatLocal(deadline)}
             {q.is_resolved && " · ✓ aufgelöst"}
@@ -297,14 +297,14 @@ function QuestionRow({
         <div className="flex shrink-0 gap-3">
           <button
             onClick={() => act(() => adminSetQuestionOpen(q.id, !q.is_open))}
-            className={`text-xs ${q.is_open ? "text-green-400" : "text-slate-400"}`}
+            className={`text-xs ${q.is_open ? "text-hit" : "text-muted"}`}
           >
             {q.is_open ? "offen" : "zu"}
           </button>
           {canDelete && (
             <button
               onClick={() => act(() => adminDeleteQuestion(q.id))}
-              className="text-xs text-red-400"
+              className="text-xs text-miss"
             >
               löschen
             </button>
@@ -319,11 +319,11 @@ function QuestionRow({
               key={o.id}
               className="flex items-center justify-between text-sm"
             >
-              <span className="text-slate-300">{o.label}</span>
+              <span className="text-muted">{o.label}</span>
               {canDelete && (
                 <button
                   onClick={() => act(() => adminDeleteQuestionOption(o.id))}
-                  className="text-xs text-red-400"
+                  className="text-xs text-miss"
                 >
                   ✕
                 </button>
@@ -335,11 +335,11 @@ function QuestionRow({
               placeholder="Neue Option…"
               value={optLabel}
               onChange={(e) => setOptLabel(e.target.value)}
-              className="flex-1 rounded-lg border border-slate-600 bg-slate-950 px-2 py-1 text-sm text-slate-100"
+              className="flex-1 rounded-lg border border-line bg-paper px-2 py-1 text-sm text-ink"
             />
             <button
               onClick={addOption}
-              className="rounded-lg bg-slate-700 px-2 py-1 text-sm text-slate-100"
+              className="rounded-lg bg-surface2 px-2 py-1 text-sm text-ink"
             >
               +
             </button>
@@ -348,15 +348,15 @@ function QuestionRow({
       )}
 
       {revealed && (
-        <div className="mt-2 border-t border-slate-800 pt-2">
-          <div className="mb-1 text-xs text-slate-400">Ergebnis</div>
+        <div className="mt-2 border-t border-line pt-2">
+          <div className="mb-1 text-xs text-muted">Ergebnis</div>
           {q.kind === "boolean" ? (
             <div className="flex gap-2">
               <button
                 onClick={() =>
                   act(() => adminSetQuestionResult({ id: q.id, bool: true }))
                 }
-                className="flex-1 rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200"
+                className="flex-1 rounded-lg border border-line px-3 py-1.5 text-sm text-ink"
               >
                 Ja
               </button>
@@ -364,7 +364,7 @@ function QuestionRow({
                 onClick={() =>
                   act(() => adminSetQuestionResult({ id: q.id, bool: false }))
                 }
-                className="flex-1 rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200"
+                className="flex-1 rounded-lg border border-line px-3 py-1.5 text-sm text-ink"
               >
                 Nein
               </button>
@@ -379,7 +379,7 @@ function QuestionRow({
                       adminSetQuestionResult({ id: q.id, optionId: o.id }),
                     )
                   }
-                  className="rounded-lg border border-slate-700 px-3 py-1.5 text-left text-sm text-slate-200"
+                  className="rounded-lg border border-line px-3 py-1.5 text-left text-sm text-ink"
                 >
                   {o.label}
                 </button>
@@ -389,14 +389,14 @@ function QuestionRow({
           {q.is_resolved && (
             <button
               onClick={() => act(() => adminClearQuestionResult(q.id))}
-              className="mt-1 text-xs text-slate-400"
+              className="mt-1 text-xs text-muted"
             >
               Ergebnis zurücksetzen
             </button>
           )}
         </div>
       )}
-      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-sm text-miss">{error}</p>}
     </div>
   );
 }

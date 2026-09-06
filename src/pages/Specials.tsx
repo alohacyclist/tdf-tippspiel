@@ -44,14 +44,14 @@ export function Specials() {
       .catch((e) => setError(e.message));
   }, [tour.id, userId]);
 
-  if (error) return <p className="py-4 text-red-400">{error}</p>;
+  if (error) return <p className="py-4 text-miss">{error}</p>;
 
   const tourClassifications = cls.filter((c) => c.stage_id === null);
   const tourQuestions = questions.filter((q) => q.stage_id === null);
 
   return (
     <div className="flex flex-col gap-3 py-3">
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-muted">
         Sonderwertungen — tippbar bis zur jeweiligen Deadline.
       </p>
       {tourClassifications.map((c) => (
@@ -65,12 +65,12 @@ export function Specials() {
         />
       ))}
       {tourClassifications.length === 0 && (
-        <p className="text-slate-400">Noch keine Wertungen.</p>
+        <p className="text-muted">Noch keine Wertungen.</p>
       )}
 
       {tourQuestions.length > 0 && (
         <>
-          <h2 className="mt-4 font-semibold text-slate-200">Fragen</h2>
+          <h2 className="mt-4 font-semibold text-ink">Fragen</h2>
           {tourQuestions.map((q) => (
             <QuestionCard
               key={q.id}

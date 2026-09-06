@@ -19,7 +19,7 @@ const TOUR_KEY = "grandtour-tour";
 
 function Center({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-full items-center justify-center px-6 text-center text-slate-300">
+    <div className="flex min-h-full items-center justify-center px-6 text-center text-muted">
       {children}
     </div>
   );
@@ -73,7 +73,10 @@ function ActiveApp({
     if (!tour) return;
     const theme = tourTheme(tour.pcs_slug);
     const root = document.documentElement;
+    // only the raw inputs are set inline; index.css decides which one becomes the
+    // text accent per theme (an inline --accent-ink would outrank the dark block).
     root.style.setProperty("--accent", theme.accent);
+    root.style.setProperty("--accent-ink-light", theme.accentInk);
     root.style.setProperty("--accent-contrast", theme.accentContrast);
     document.title = tour.name;
   }, [tour]);

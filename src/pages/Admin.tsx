@@ -55,8 +55,8 @@ function AdminTodo({
 }) {
   const count = pendingStages.length + pendingQuestions.length;
   return (
-    <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900 p-4">
-      <h2 className="mb-2 flex items-center gap-2 font-semibold text-slate-200">
+    <div className="mt-4 rounded-xl border border-line bg-surface p-4">
+      <h2 className="mb-2 flex items-center gap-2 font-semibold text-ink">
         Zu erledigen
         {count > 0 && (
           <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-contrast">
@@ -65,18 +65,18 @@ function AdminTodo({
         )}
       </h2>
       {count === 0 ? (
-        <p className="text-sm text-slate-500">Alles erledigt ✓</p>
+        <p className="text-sm text-faint">Alles erledigt ✓</p>
       ) : (
         <div className="flex flex-col gap-2">
           {pendingStages.map((s) => (
             <div
               key={s.id}
-              className="flex items-center justify-between gap-2 rounded-lg bg-slate-950 px-3 py-2"
+              className="flex items-center justify-between gap-2 rounded-lg bg-paper px-3 py-2"
             >
-              <span className="min-w-0 truncate text-sm text-slate-200">
+              <span className="min-w-0 truncate text-sm text-ink">
                 Etappe {s.number} ·{" "}
-                <span className="text-red-400">Sieger fehlt</span>
-                <span className="ml-1 text-xs text-slate-500">
+                <span className="text-miss">Sieger fehlt</span>
+                <span className="ml-1 text-xs text-faint">
                   {formatLocal(s.start_time)}
                 </span>
               </span>
@@ -91,15 +91,15 @@ function AdminTodo({
           {pendingQuestions.map((q) => (
             <div
               key={q.id}
-              className="flex items-center justify-between gap-2 rounded-lg bg-slate-950 px-3 py-2"
+              className="flex items-center justify-between gap-2 rounded-lg bg-paper px-3 py-2"
             >
-              <span className="min-w-0 truncate text-sm text-slate-200">
-                Frage · <span className="text-red-400">Ergebnis fehlt</span>
-                <span className="ml-1 text-xs text-slate-500">{q.prompt}</span>
+              <span className="min-w-0 truncate text-sm text-ink">
+                Frage · <span className="text-miss">Ergebnis fehlt</span>
+                <span className="ml-1 text-xs text-faint">{q.prompt}</span>
               </span>
               <button
                 onClick={onPickQuestion}
-                className="shrink-0 rounded-lg bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100"
+                className="shrink-0 rounded-lg bg-surface2 px-3 py-1 text-xs font-semibold text-ink"
               >
                 Öffnen
               </button>
@@ -197,15 +197,15 @@ export function Admin() {
       : []),
   ];
 
-  if (!canEdit) return <p className="py-4 text-red-400">Kein Zugriff.</p>;
+  if (!canEdit) return <p className="py-4 text-miss">Kein Zugriff.</p>;
 
   return (
     <div className="py-3">
-      <Link to="/" className="text-sm text-slate-400">
+      <Link to="/" className="text-sm text-muted">
         ← Etappen
       </Link>
-      <h1 className="mt-2 text-xl font-bold text-slate-100">Admin</h1>
-      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+      <h1 className="mt-2 text-xl font-bold text-ink">Admin</h1>
+      {error && <p className="mt-2 text-sm text-miss">{error}</p>}
 
       <AdminTodo
         pendingStages={pendingStages}
@@ -214,7 +214,7 @@ export function Admin() {
         onPickQuestion={() => setTab("questions")}
       />
 
-      <div className="mt-6 flex gap-1 overflow-x-auto border-b border-slate-800">
+      <div className="mt-6 flex gap-1 overflow-x-auto border-b border-line">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -222,7 +222,7 @@ export function Admin() {
             className={`shrink-0 border-b-2 px-3 py-2 text-sm ${
               tab === t.key
                 ? "border-accent text-accent"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                : "border-transparent text-muted hover:text-ink"
             }`}
           >
             {t.label}
@@ -264,7 +264,7 @@ export function Admin() {
                 />
               ))}
               {cls.length === 0 && (
-                <p className="text-sm text-slate-400">Noch keine Wertungen.</p>
+                <p className="text-sm text-muted">Noch keine Wertungen.</p>
               )}
             </div>
           </>
@@ -356,10 +356,10 @@ function RidersSection({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Fahrer suchen…"
-        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
+        className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-accent"
       />
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      <p className="text-xs text-slate-500">
+      {error && <p className="text-sm text-miss">{error}</p>}
+      <p className="text-xs text-faint">
         {query
           ? "DNF = Aufgabe (mit Etappe), DNS = nicht gestartet — beide fliegen aus der Tipp-Auswahl."
           : "Aktuell nicht in der Auswahl (Aufgaben + Nicht-Starter). Suchen, um jemanden zu markieren."}
@@ -369,15 +369,15 @@ function RidersSection({
         return (
           <div
             key={r.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2"
           >
-            <span className="min-w-0 truncate text-sm text-slate-200">
+            <span className="min-w-0 truncate text-sm text-ink">
               {r.name}
-              <span className="ml-2 text-xs text-slate-500">{r.team}</span>
+              <span className="ml-2 text-xs text-faint">{r.team}</span>
             </span>
             <div className="flex shrink-0 items-center gap-2">
               <span
-                className={`text-xs ${r.is_active ? "text-green-400" : "text-red-400"}`}
+                className={`text-xs ${r.is_active ? "text-hit" : "text-miss"}`}
               >
                 {riderStatusLabel(r)}
               </span>
@@ -388,7 +388,7 @@ function RidersSection({
                     onChange={(e) =>
                       setDnfStage((p) => ({ ...p, [r.id]: e.target.value }))
                     }
-                    className="rounded-lg border border-slate-600 bg-slate-950 px-1.5 py-1 text-xs text-slate-100"
+                    className="rounded-lg border border-line bg-paper px-1.5 py-1 text-xs text-ink"
                     aria-label="DNF-Etappe"
                   >
                     <option value="">Etappe…</option>
@@ -401,14 +401,14 @@ function RidersSection({
                   <button
                     disabled={busy || !dnfStage[r.id]}
                     onClick={() => apply(r, false, Number(dnfStage[r.id]))}
-                    className="rounded-lg bg-red-900 px-2 py-1 text-xs font-semibold text-red-100 disabled:opacity-40"
+                    className="rounded-lg bg-miss/15 px-2 py-1 text-xs font-semibold text-miss disabled:opacity-40"
                   >
                     DNF
                   </button>
                   <button
                     disabled={busy}
                     onClick={() => apply(r, false, null)}
-                    className="rounded-lg bg-slate-700 px-2 py-1 text-xs font-semibold text-slate-100 disabled:opacity-50"
+                    className="rounded-lg bg-surface2 px-2 py-1 text-xs font-semibold text-ink disabled:opacity-50"
                   >
                     DNS
                   </button>
@@ -417,7 +417,7 @@ function RidersSection({
                 <button
                   disabled={busy}
                   onClick={() => apply(r, true, null)}
-                  className="rounded-lg bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100 disabled:opacity-50"
+                  className="rounded-lg bg-surface2 px-3 py-1 text-xs font-semibold text-ink disabled:opacity-50"
                 >
                   reaktivieren
                 </button>
@@ -427,7 +427,7 @@ function RidersSection({
         );
       })}
       {shown.length === 0 && (
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-muted">
           {query ? "Kein Treffer." : "Alle Fahrer aktiv."}
         </p>
       )}
@@ -497,18 +497,18 @@ function StageTipBackfill({
   return (
     <form
       onSubmit={submit}
-      className="mt-8 flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-4"
+      className="mt-8 flex flex-col gap-2 rounded-xl border border-line bg-surface p-4"
     >
-      <h2 className="font-semibold text-slate-200">
+      <h2 className="font-semibold text-ink">
         Etappensieger-Tipp nachtragen
       </h2>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-faint">
         Trägt einen Tipp für einen Spieler ein — auch nach Deadline.
       </p>
       <select
         value={userId}
         onChange={(e) => setUserId(e.target.value)}
-        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+        className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
       >
         <option value="">Spieler wählen…</option>
         {players.map((p) => (
@@ -525,7 +525,7 @@ function StageTipBackfill({
           setTeam("");
           setSaved(false);
         }}
-        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+        className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
       >
         <option value="">Etappe wählen…</option>
         {stages.map((s) => (
@@ -540,7 +540,7 @@ function StageTipBackfill({
           <select
             value={team}
             onChange={(e) => setTeam(e.target.value)}
-            className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
           >
             <option value="">Mannschaft…</option>
             {teams.map((t) => (
@@ -559,8 +559,8 @@ function StageTipBackfill({
       >
         Tipp speichern
       </button>
-      {saved && <p className="text-sm text-green-400">Gespeichert.</p>}
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {saved && <p className="text-sm text-hit">Gespeichert.</p>}
+      {error && <p className="text-sm text-miss">{error}</p>}
     </form>
   );
 }
@@ -601,17 +601,17 @@ function UsersSection({
 
   return (
     <>
-      <h2 className="mb-2 mt-2 font-semibold text-slate-200">
+      <h2 className="mb-2 mt-2 font-semibold text-ink">
         Nutzer & Rollen
       </h2>
-      {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
+      {error && <p className="mb-2 text-sm text-miss">{error}</p>}
       <div className="flex flex-col gap-2">
         {profiles.map((p) => (
           <div
             key={p.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2"
           >
-            <span className="text-sm text-slate-200">
+            <span className="text-sm text-ink">
               {p.display_name ?? "—"}
             </span>
             <div className="flex gap-2">
@@ -620,7 +620,7 @@ function UsersSection({
                 onChange={(e) =>
                   setStatus(p.id, e.target.value as ProfileStatus)
                 }
-                className="rounded-lg border border-slate-600 bg-slate-950 px-2 py-1 text-sm text-slate-100"
+                className="rounded-lg border border-line bg-paper px-2 py-1 text-sm text-ink"
                 aria-label="Status"
               >
                 {STATUSES.map((s) => (
@@ -632,7 +632,7 @@ function UsersSection({
               <select
                 value={p.role}
                 onChange={(e) => setRole(p.id, e.target.value as ProfileRole)}
-                className="rounded-lg border border-slate-600 bg-slate-950 px-2 py-1 text-sm text-slate-100"
+                className="rounded-lg border border-line bg-paper px-2 py-1 text-sm text-ink"
                 aria-label="Rolle"
               >
                 {ROLES.map((r) => (
@@ -645,7 +645,7 @@ function UsersSection({
           </div>
         ))}
         {profiles.length === 0 && (
-          <p className="text-sm text-slate-400">Keine Nutzer.</p>
+          <p className="text-sm text-muted">Keine Nutzer.</p>
         )}
       </div>
     </>
@@ -710,26 +710,26 @@ function CreateClassification({
   return (
     <form
       onSubmit={submit}
-      className="mt-5 flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-4"
+      className="mt-5 flex flex-col gap-2 rounded-xl border border-line bg-surface p-4"
     >
-      <h2 className="font-semibold text-slate-200">Sonderwertung anlegen</h2>
+      <h2 className="font-semibold text-ink">Sonderwertung anlegen</h2>
       <div className="grid grid-cols-2 gap-2">
         <input
           placeholder="key (z.B. sprint_10)"
           value={key}
           onChange={(e) => setKey(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-accent"
         />
         <input
           placeholder="Name (Anzeige)"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-accent"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-accent"
         />
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         >
           {TYPES.map((t) => (
             <option key={t} value={t}>
@@ -743,9 +743,9 @@ function CreateClassification({
           max={10}
           value={slots}
           onChange={(e) => setSlots(Number(e.target.value))}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         />
-        <label className="flex items-center gap-2 text-sm text-slate-300">
+        <label className="flex items-center gap-2 text-sm text-muted">
           <input
             type="checkbox"
             checked={ordered}
@@ -758,11 +758,11 @@ function CreateClassification({
           placeholder="Punkte (optional)"
           value={points}
           onChange={(e) => setPoints(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         />
       </div>
 
-      <div className="mt-1 flex gap-4 text-sm text-slate-300">
+      <div className="mt-1 flex gap-4 text-sm text-muted">
         <label className="flex items-center gap-1">
           <input
             type="radio"
@@ -785,13 +785,13 @@ function CreateClassification({
           type="datetime-local"
           value={deadline}
           onChange={(e) => setDeadline(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         />
       ) : (
         <select
           value={stageId}
           onChange={(e) => setStageId(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+          className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
         >
           <option value="">Etappe wählen…</option>
           {stages.map((s) => (
@@ -808,7 +808,7 @@ function CreateClassification({
       >
         Anlegen
       </button>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-miss">{error}</p>}
     </form>
   );
 }
@@ -888,23 +888,23 @@ function ClassificationRow({
   }
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2">
+    <div className="rounded-lg border border-line bg-surface px-3 py-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-slate-200">
+        <span className="text-sm text-ink">
           {c.name}
-          <span className="ml-2 text-xs text-slate-500">
+          <span className="ml-2 text-xs text-faint">
             {c.stage_id ? "Etappe" : "Tour"} · bis {formatLocal(deadline)}
           </span>
         </span>
         <div className="flex shrink-0 gap-3">
           <button
             onClick={toggleOpen}
-            className={`text-xs ${c.is_open ? "text-green-400" : "text-slate-400"}`}
+            className={`text-xs ${c.is_open ? "text-hit" : "text-muted"}`}
           >
             {c.is_open ? "offen" : "geschlossen"}
           </button>
           {canDelete && (
-            <button onClick={remove} className="text-xs text-red-400">
+            <button onClick={remove} className="text-xs text-miss">
               löschen
             </button>
           )}
@@ -916,7 +916,7 @@ function ClassificationRow({
           {Array.from({ length: c.slots }, (_, i) => i + 1).map((slot) => (
             <div key={slot}>
               {c.ordered && (
-                <div className="mb-1 text-xs text-slate-400">Platz {slot}</div>
+                <div className="mb-1 text-xs text-muted">Platz {slot}</div>
               )}
               <RiderCombobox
                 riders={riders}
@@ -941,7 +941,7 @@ function ClassificationRow({
           </button>
         </div>
       )}
-      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-sm text-miss">{error}</p>}
     </div>
   );
 }
@@ -1006,13 +1006,13 @@ function StageResult({
   return (
     <form
       onSubmit={submit}
-      className="mt-8 flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-4"
+      className="mt-8 flex flex-col gap-2 rounded-xl border border-line bg-surface p-4"
     >
-      <h2 className="font-semibold text-slate-200">Etappen-Ergebnis</h2>
+      <h2 className="font-semibold text-ink">Etappen-Ergebnis</h2>
       <select
         value={stageId}
         onChange={(e) => onStageId(e.target.value)}
-        className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+        className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
       >
         <option value="">Etappe wählen…</option>
         {stages.map((s) => (
@@ -1027,7 +1027,7 @@ function StageResult({
           <select
             value={team}
             onChange={(e) => setTeam(e.target.value)}
-            className="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
           >
             <option value="">Sieger-Mannschaft…</option>
             {teams.map((t) => (
@@ -1040,7 +1040,7 @@ function StageResult({
           <RiderCombobox riders={riders} value={rider} onSelect={setRider} />
         ))}
 
-      <label className="flex items-center gap-2 text-sm text-slate-300">
+      <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
           checked={close}
@@ -1054,7 +1054,7 @@ function StageResult({
       >
         Speichern
       </button>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-miss">{error}</p>}
     </form>
   );
 }

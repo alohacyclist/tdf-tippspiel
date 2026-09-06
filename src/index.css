@@ -1,23 +1,118 @@
 @import "tailwindcss";
 
-/* Accent utilities (text-accent, bg-accent, border-accent, bg-accent/20 …)
-   resolve to per-tour CSS vars set by the app; defaults below keep pre-auth
-   screens (Login) on the Tour-de-France yellow. */
+/* Roadbook: the printed race manual as the model — paper ground, ink type, hairline
+   rules, condensed numerals. Light is the default; dark mirrors it as ink-on-tarmac.
+   The per-race jersey colour is injected as --accent / --accent-ink-light by the app.
+   Fonts are linked from index.html (an @import after Tailwind's rules is dropped). */
+
 @theme {
-  --color-accent: var(--accent);
+  --font-display: "Archivo Narrow", "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-hit: var(--hit);
+  --color-miss: var(--miss);
+  --color-warn: var(--warn);
+  /* accent = text-safe variant (dark on paper, bright on tarmac);
+     accent-solid = the pure jersey colour for fills */
+  --color-accent: var(--accent-ink);
+  --color-accent-solid: var(--accent);
   --color-accent-contrast: var(--accent-contrast);
 }
 
 :root {
   color-scheme: light dark;
+  --paper: #edede7;
+  --surface: #ffffff;
+  --surface2: #f4f4ee;
+  --ink: #14171a;
+  --muted: #626b66;
+  --faint: #8d948e;
+  --line: #cfd2cb;
+  --hit: #14671f;
+  --miss: #c81e3c;
+  --warn: #a15c07;
+  /* defaults until the app applies the active race's palette; the app sets
+     --accent + --accent-ink-light, this picks which one reads as text */
   --accent: #facc15;
+  --accent-ink-light: #a16207;
+  --accent-ink: var(--accent-ink-light);
   --accent-contrast: #0f172a;
 }
 
-html, body, #root { height: 100%; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14171a;
+    --surface: #1b1f22;
+    --surface2: #23282c;
+    --ink: #ecefea;
+    --muted: #99a19b;
+    --faint: #6f7873;
+    --line: #2c3134;
+    --hit: #4ade80;
+    --miss: #fb7185;
+    --warn: #fcd34d;
+    /* on a dark ground the pure jersey colour is the readable one */
+    --accent-ink: var(--accent);
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #14171a;
+  --surface: #1b1f22;
+  --surface2: #23282c;
+  --ink: #ecefea;
+  --muted: #99a19b;
+  --faint: #6f7873;
+  --line: #2c3134;
+  --hit: #4ade80;
+  --miss: #fb7185;
+  --warn: #fcd34d;
+  --accent-ink: var(--accent);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: #0b0f17;
-  color: #e7ecf3;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+/* Race numbers, ranks and stage numbers read as plate numerals. */
+.plate {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Technical data (times, distances, points) is set in the mono face. */
+.data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
 }

@@ -18,6 +18,14 @@ import { stageLabel, stagesNounPlural } from "../lib/stageLabel";
 import { Countdown } from "../components/Countdown";
 import { SkeletonList } from "../components/Skeleton";
 
+const TYPE_SHORT: Record<string, string> = {
+  flat: "Flach",
+  hilly: "Hügelig",
+  mountain: "Berg",
+  itt: "Einzelzeitfahren",
+  ttt: "Mannschaftszeitfahren",
+};
+
 export function Stages() {
   const { tour, userId } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
@@ -47,7 +55,7 @@ export function Stages() {
     };
   }, [tour.id, userId]);
 
-  if (error) return <p className="text-red-400">{error}</p>;
+  if (error) return <p className="text-miss">{error}</p>;
   if (loading)
     return (
       <div className="py-2">
@@ -55,8 +63,10 @@ export function Stages() {
       </div>
     );
 
+  const oneDay = tour.kind === "one_day";
+
   return (
-    <ul className="flex flex-col gap-2 py-2">
+    <ul className="divide-y divide-line border-y border-line">
       {stages.map((s) => {
         const started = isPast(s.start_time);
         const tip = tips.get(s.id);
@@ -67,63 +77,68 @@ export function Stages() {
         const correct = tip ? stageWinnerMatch(s, tip) : false;
         const tipColor = resolved
           ? correct
-            ? "text-green-400"
+            ? "text-hit"
             : tip
-              ? "text-red-400"
-              : "text-slate-500"
+              ? "text-miss"
+              : "text-faint"
           : tip
-            ? "text-slate-300"
-            : "text-slate-500";
+            ? "text-muted"
+            : "text-faint";
         return (
           <li key={s.id}>
             <Link
               to={`/stage/${s.id}`}
-              className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-3"
+              className="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 hover:bg-surface2"
             >
-              <div>
-                <div className="font-semibold text-slate-100">
-                  {stageLabel(tour.kind, s)}
-                  {s.start_city && s.finish_city
-                    ? ` · ${s.start_city} → ${s.finish_city}`
-                    : ""}
-                  {s.type === "ttt" && (
-                    <span className="ml-2 rounded bg-accent/20 px-1.5 py-0.5 text-xs font-medium text-accent">
-                      MZF
-                    </span>
-                  )}
-                  {s.type === "itt" && (
-                    <span className="ml-2 rounded bg-slate-700 px-1.5 py-0.5 text-xs font-medium text-slate-300">
-                      EZF
-                    </span>
-                  )}
+              {/* stage number as a race plate; one-day races have nothing to number */}
+              {!oneDay && (
+                <div className="w-11 text-center">
+                  <div className="plate text-2xl leading-none text-ink">
+                    {s.number}
+                  </div>
+                  <div className="label mt-0.5 text-[0.5rem] text-faint">
+                    Etappe
+                  </div>
                 </div>
-                <div className="text-xs text-slate-400">
-                  {formatLocal(s.start_time)}
+              )}
+              <div className="min-w-0">
+                <div className="truncate font-semibold text-ink">
+                  {s.start_city && s.finish_city
+                    ? `${s.start_city} → ${s.finish_city}`
+                    : stageLabel(tour.kind, s)}
+                </div>
+                <div className="data mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted">
+                  {s.distance_km != null && <span>{s.distance_km} km</span>}
+                  {s.type && <span>{TYPE_SHORT[s.type]}</span>}
+                  <span>{formatLocal(s.start_time)}</span>
                 </div>
               </div>
-              <div className="text-right text-xs">
+              <div className="pr-1 text-right">
                 {started ? (
-                  <span className="text-slate-500">gestartet</span>
+                  <span className="label text-faint">
+                    {resolved ? "beendet" : "läuft"}
+                  </span>
                 ) : (
-                  <span className="text-accent">
+                  <span className="data text-sm font-semibold text-accent">
                     <Countdown iso={s.start_time} />
                   </span>
                 )}
                 {resolved && (
-                  <div className="text-slate-400">
-                    🏁 {stageWinnerLabel(s, riderName)}
+                  <div className="truncate text-xs text-muted">
+                    {stageWinnerLabel(s, riderName)}
                   </div>
                 )}
-                <div className={tipColor}>{tipLabel}</div>
+                <div className={`truncate text-xs ${tipColor}`}>
+                  {tipLabel}
+                  {resolved && tip && (correct ? " ✓" : " ✗")}
+                </div>
               </div>
             </Link>
           </li>
         );
       })}
       {stages.length === 0 && (
-        <p className="text-slate-400">
-          Noch keine {stagesNounPlural(tour.kind)}.
-        </p>
+        <p className="text-muted">Noch keine {stagesNounPlural(tour.kind)}.</p>
       )}
     </ul>
   );

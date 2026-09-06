@@ -56,16 +56,16 @@ export function PlayerTips() {
     return m;
   }, [clsTips]);
 
-  if (error) return <p className="py-4 text-red-400">{error}</p>;
+  if (error) return <p className="py-4 text-miss">{error}</p>;
 
   return (
     <div className="py-3">
-      <Link to="/rangliste" className="text-sm text-slate-400">
+      <Link to="/rangliste" className="text-sm text-muted">
         ← Rangliste
       </Link>
-      <h1 className="mt-2 text-xl font-bold text-slate-100">{name ?? "—"}</h1>
+      <h1 className="mt-2 text-xl font-bold text-ink">{name ?? "—"}</h1>
 
-      <h2 className="mb-2 mt-5 font-semibold text-slate-200">Etappen-Tipps</h2>
+      <h2 className="mb-2 mt-5 font-semibold text-ink">Etappen-Tipps</h2>
       <ul className="flex flex-col gap-1">
         {stages.map((s) => {
           const tip = tipByStage.get(s.id);
@@ -79,21 +79,21 @@ export function PlayerTips() {
           return (
             <li
               key={s.id}
-              className="flex justify-between rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+              className="flex justify-between rounded-lg border border-line bg-surface px-3 py-2"
             >
               <Link
                 to={`/stage/${s.id}`}
-                className="text-slate-400 hover:text-slate-200"
+                className="text-muted hover:text-ink"
               >
                 Etappe {s.number}
               </Link>
               <span
                 className={
                   correct
-                    ? "font-semibold text-green-400"
+                    ? "font-semibold text-hit"
                     : tip
-                      ? "text-slate-200"
-                      : "text-slate-500"
+                      ? "text-ink"
+                      : "text-faint"
                 }
               >
                 {label}
@@ -102,11 +102,11 @@ export function PlayerTips() {
           );
         })}
         {stages.length === 0 && (
-          <p className="text-slate-400">Keine Etappen.</p>
+          <p className="text-muted">Keine Etappen.</p>
         )}
       </ul>
 
-      <h2 className="mb-2 mt-6 font-semibold text-slate-200">Wertungs-Tipps</h2>
+      <h2 className="mb-2 mt-6 font-semibold text-ink">Wertungs-Tipps</h2>
       <ul className="flex flex-col gap-1">
         {classifications.map((c) => {
           const picks = (tipsByCls.get(c.id) ?? [])
@@ -116,22 +116,22 @@ export function PlayerTips() {
           return (
             <li
               key={c.id}
-              className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+              className="rounded-lg border border-line bg-surface px-3 py-2"
             >
-              <div className="text-sm font-medium text-slate-300">{c.name}</div>
+              <div className="text-sm font-medium text-muted">{c.name}</div>
               {picks.length > 0 ? (
-                <ol className="mt-1 flex flex-col gap-0.5 text-sm text-slate-200">
+                <ol className="mt-1 flex flex-col gap-0.5 text-sm text-ink">
                   {picks.map((p) => (
                     <li key={p.rider_id}>
                       {c.ordered && (
-                        <span className="mr-1 text-slate-500">{p.slot}.</span>
+                        <span className="mr-1 text-faint">{p.slot}.</span>
                       )}
                       {p.rider?.name ?? "—"}
                     </li>
                   ))}
                 </ol>
               ) : (
-                <div className="mt-1 text-sm text-slate-500">
+                <div className="mt-1 text-sm text-faint">
                   {revealed ? "kein Tipp" : "verdeckt"}
                 </div>
               )}
@@ -139,7 +139,7 @@ export function PlayerTips() {
           );
         })}
         {classifications.length === 0 && (
-          <p className="text-slate-400">Keine Wertungen.</p>
+          <p className="text-muted">Keine Wertungen.</p>
         )}
       </ul>
     </div>
