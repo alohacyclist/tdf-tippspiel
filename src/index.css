@@ -112,6 +112,37 @@ body {
   text-transform: uppercase;
 }
 
+/* The stage profile sits behind its row like a watermark in the roadbook. The
+   source images are dark line art on white, so light multiplies them onto the
+   paper; dark inverts them first and screens the result onto the tarmac. */
+.profile-wm {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  height: 100%;
+  width: 58%;
+  max-width: 300px;
+  object-fit: contain;
+  object-position: right center;
+  opacity: 0.14;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .profile-wm {
+    opacity: 0.2;
+    filter: invert(1);
+    mix-blend-mode: screen;
+  }
+}
+
+:root[data-theme="dark"] .profile-wm {
+  opacity: 0.2;
+  filter: invert(1);
+  mix-blend-mode: screen;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent-ink);
   outline-offset: 2px;

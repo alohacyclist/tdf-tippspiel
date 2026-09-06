@@ -3,6 +3,14 @@ import { signOut } from "../lib/supabase";
 import type { AppCtx } from "../lib/appContext";
 import { stagesNounPlural } from "../lib/stageLabel";
 import { tourTheme } from "../lib/theme";
+import { useTheme } from "../hooks/useTheme";
+
+const THEME_ICON = { system: "◐", light: "☀", dark: "☾" } as const;
+const THEME_TITLE = {
+  system: "Darstellung: System",
+  light: "Darstellung: Hell",
+  dark: "Darstellung: Dunkel",
+} as const;
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `text-sm ${isActive ? "text-accent" : "text-muted hover:text-ink"}`;
@@ -10,6 +18,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 export function Layout({ ctx }: { ctx: AppCtx }) {
   const isGrandTour = ctx.tour.kind === "grand_tour";
   const gradient = tourTheme(ctx.tour.pcs_slug).titleGradient;
+  const { choice, cycle } = useTheme();
   const tabs = [
     { to: "/", label: stagesNounPlural(ctx.tour.kind), end: true },
     ...(isGrandTour
@@ -82,6 +91,14 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
           <NavLink to="/profil" className={navClass}>
             Profil
           </NavLink>
+          <button
+            onClick={cycle}
+            title={THEME_TITLE[choice]}
+            aria-label={THEME_TITLE[choice]}
+            className="text-base leading-none text-muted hover:text-ink"
+          >
+            {THEME_ICON[choice]}
+          </button>
           <button
             className="text-sm text-muted hover:text-ink"
             onClick={() => signOut()}

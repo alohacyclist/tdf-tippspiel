@@ -17,6 +17,7 @@ import {
 import { stageLabel, stagesNounPlural } from "../lib/stageLabel";
 import { Countdown } from "../components/Countdown";
 import { SkeletonList } from "../components/Skeleton";
+import { StageWatermark } from "../components/StageWatermark";
 
 const TYPE_SHORT: Record<string, string> = {
   flat: "Flach",
@@ -88,11 +89,12 @@ export function Stages() {
           <li key={s.id}>
             <Link
               to={`/stage/${s.id}`}
-              className="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 hover:bg-surface2"
+              className="relative grid grid-cols-[auto_1fr_auto] items-center gap-3 overflow-hidden py-3 hover:bg-surface2"
             >
+              <StageWatermark raceSlug={tour.pcs_slug} stageNumber={s.number} />
               {/* stage number as a race plate; one-day races have nothing to number */}
               {!oneDay && (
-                <div className="w-11 text-center">
+                <div className="relative w-11 text-center">
                   <div className="plate text-2xl leading-none text-ink">
                     {s.number}
                   </div>
@@ -101,7 +103,7 @@ export function Stages() {
                   </div>
                 </div>
               )}
-              <div className="min-w-0">
+              <div className="relative min-w-0">
                 <div className="truncate font-semibold text-ink">
                   {s.start_city && s.finish_city
                     ? `${s.start_city} → ${s.finish_city}`
@@ -113,7 +115,7 @@ export function Stages() {
                   <span>{formatLocal(s.start_time)}</span>
                 </div>
               </div>
-              <div className="pr-1 text-right">
+              <div className="relative pr-1 text-right">
                 {started ? (
                   <span className="label text-faint">
                     {resolved ? "beendet" : "läuft"}
