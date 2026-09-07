@@ -17,8 +17,9 @@ export interface Tour {
   is_active: boolean;
   pcs_slug: string;
   kind: TourKind;
-  // earliest stage start (derived in listTours); null if no stages seeded yet.
+  // first/last stage start (derived in listTours); null if no stages seeded yet.
   starts_at: string | null;
+  ends_at: string | null;
 }
 
 export type StageType = "flat" | "hilly" | "mountain" | "itt" | "ttt";

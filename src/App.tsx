@@ -4,6 +4,7 @@ import { useAuth } from "./hooks/useAuth";
 import { listTours } from "./lib/queries";
 import type { Tour } from "./lib/types";
 import { tourTheme } from "./lib/theme";
+import { tourStatus } from "./lib/tourStatus";
 import { Layout } from "./components/Layout";
 import { Login } from "./pages/Login";
 import { Onboarding } from "./pages/Onboarding";
@@ -33,11 +34,18 @@ function readStored(): string | null {
   }
 }
 
-// default = last chosen (if still present), else the active tour, else newest.
+// Default: the last chosen edition if it still exists, otherwise whichever race is
+// running right now, then the next one coming up, then the flagged tour, then newest.
 function pickInitial(tours: Tour[]): string | null {
   if (tours.length === 0) return null;
   const stored = readStored();
   if (stored && tours.some((t) => t.id === stored)) return stored;
+  const running = tours.find((t) => tourStatus(t) === "running");
+  if (running) return running.id;
+  const upcoming = [...tours]
+    .filter((t) => tourStatus(t) === "upcoming")
+    .sort((a, b) => Date.parse(a.starts_at!) - Date.parse(b.starts_at!))[0];
+  if (upcoming) return upcoming.id;
   return (tours.find((t) => t.is_active) ?? tours[0]).id;
 }
 

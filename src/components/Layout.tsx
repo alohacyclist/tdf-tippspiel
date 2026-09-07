@@ -4,6 +4,7 @@ import type { AppCtx } from "../lib/appContext";
 import { stagesNounPlural } from "../lib/stageLabel";
 import { tourTheme } from "../lib/theme";
 import { useTheme } from "../hooks/useTheme";
+import { groupByYear, tourStatus } from "../lib/tourStatus";
 
 const THEME_ICON = { system: "◐", light: "☀", dark: "☾" } as const;
 const THEME_TITLE = {
@@ -19,6 +20,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
   const isGrandTour = ctx.tour.kind === "grand_tour";
   const gradient = tourTheme(ctx.tour.pcs_slug).titleGradient;
   const { choice, cycle } = useTheme();
+  const status = tourStatus(ctx.tour);
   const tabs = [
     { to: "/", label: stagesNounPlural(ctx.tour.kind), end: true },
     ...(isGrandTour
@@ -46,10 +48,14 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
               className="max-w-[11rem] truncate rounded-lg border border-line bg-surface px-2 py-1 text-sm font-bold text-accent"
               aria-label="Tour wählen"
             >
-              {ctx.tours.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
+              {groupByYear(ctx.tours).map(([year, tours]) => (
+                <optgroup key={year} label={String(year)}>
+                  {tours.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           ) : (
@@ -60,17 +66,11 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
               {ctx.tour.name}
             </span>
           )}
-          {!ctx.tour.is_active &&
-            (() => {
-              const upcoming =
-                !!ctx.tour.starts_at &&
-                Date.parse(ctx.tour.starts_at) > Date.now();
-              return (
-                <span className="label shrink-0 border border-line px-1.5 py-0.5 text-muted">
-                  {upcoming ? "Vorschau" : "Archiv"}
-                </span>
-              );
-            })()}
+          {status !== "finished" && status !== "unknown" && (
+            <span className="label shrink-0 border border-line px-1.5 py-0.5 text-muted">
+              {status === "running" ? "Läuft" : "Vorschau"}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-4">

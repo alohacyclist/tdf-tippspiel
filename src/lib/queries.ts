@@ -24,9 +24,10 @@ function unwrap<T>(res: {
   return res.data as T;
 }
 
-// All tours, newest first. The app picks the selected/active one; multiple rows
-// are expected once past tours are archived (Tour-Switcher). Derives starts_at
-// (earliest stage start) so the UI can tell an upcoming tour from an archived one.
+// Every edition of every race, newest first — nothing is ever filtered out, so a
+// past season stays reachable from the switcher. Derives the first and last stage
+// start, which is how the UI tells upcoming from running from finished (tours
+// .is_active cannot: the schema allows only one active row at a time).
 export async function listTours(): Promise<Tour[]> {
   const rows = unwrap<
     Array<Tour & { stages: { start_time: string | null }[] }>
@@ -41,7 +42,11 @@ export async function listTours(): Promise<Tour[]> {
       .map((s) => s.start_time)
       .filter((s): s is string => !!s)
       .sort();
-    return { ...t, starts_at: times[0] ?? null };
+    return {
+      ...t,
+      starts_at: times[0] ?? null,
+      ends_at: times[times.length - 1] ?? null,
+    };
   });
 }
 
