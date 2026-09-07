@@ -23,7 +23,7 @@ export function Login({ expired = false }: { expired?: boolean }) {
   return (
     <div className="mx-auto flex min-h-full max-w-sm flex-col justify-center px-6">
       <h1 className="mb-1 text-2xl font-bold text-accent">
-        Grand-Tour-Tippspiel
+        ridtipp
       </h1>
       <p className="mb-6 text-muted">Anmelden per Magic-Link.</p>
 

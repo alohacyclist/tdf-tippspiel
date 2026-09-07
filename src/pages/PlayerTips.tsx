@@ -13,6 +13,7 @@ import {
 import type { Classification, Stage } from "../lib/types";
 import { isPast } from "../lib/time";
 import { stageWinnerMatch } from "../lib/stageResult";
+import { stageLabel } from "../lib/stageLabel";
 
 export function PlayerTips() {
   const { userId: playerId } = useParams();
@@ -85,7 +86,7 @@ export function PlayerTips() {
                 to={`/stage/${s.id}`}
                 className="text-muted hover:text-ink"
               >
-                Etappe {s.number}
+                {stageLabel(tour.kind, s)}
               </Link>
               <span
                 className={

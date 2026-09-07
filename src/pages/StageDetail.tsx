@@ -182,46 +182,62 @@ export function StageDetail() {
         <Link to="/" className="text-sm text-muted">
           ← {stagesNounPlural(tour.kind)}
         </Link>
-        <div className="flex gap-3 text-sm">
-          {prev ? (
-            <Link to={`/stage/${prev.id}`} className="text-accent">
-              ← Etappe {prev.number}
-            </Link>
+        {/* a one-day race has a single stage — nothing to page through */}
+        {stages.length > 1 && (
+          <div className="flex gap-3 text-sm">
+            {prev ? (
+              <Link to={`/stage/${prev.id}`} className="text-accent">
+                ← {prev.number}
+              </Link>
+            ) : (
+              <span className="text-faint">←</span>
+            )}
+            {next ? (
+              <Link to={`/stage/${next.id}`} className="text-accent">
+                {next.number} →
+              </Link>
+            ) : (
+              <span className="text-faint">→</span>
+            )}
+          </div>
+        )}
+      </div>
+      {/* roadbook masthead: plate number, route, then the technical data line */}
+      <div className="mt-3 flex items-start gap-3 border-b-2 border-ink pb-3">
+        {tour.kind !== "one_day" && (
+          <div className="w-12 shrink-0 text-center">
+            <div className="plate text-4xl leading-none text-ink">
+              {stage.number}
+            </div>
+            <div className="label mt-0.5 text-[0.5rem] text-faint">Etappe</div>
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-2xl font-bold leading-tight text-ink">
+            {stage.start_city && stage.finish_city
+              ? `${stage.start_city} → ${stage.finish_city}`
+              : stageLabel(tour.kind, stage)}
+          </h1>
+          <div className="data mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+            {stage.distance_km != null && <span>{stage.distance_km} km</span>}
+            {stage.type && <span>{TYPE_LABEL[stage.type]}</span>}
+            <span>{formatLocal(stage.start_time)}</span>
+          </div>
+        </div>
+        <div className="shrink-0 text-right">
+          {started ? (
+            <span className="label text-faint">
+              {stage.winner_rider_id || stage.winner_team ? "beendet" : "läuft"}
+            </span>
           ) : (
-            <span className="text-faint">← Etappe</span>
+            <span className="data text-sm font-semibold text-accent">
+              <Countdown iso={stage.start_time} />
+            </span>
           )}
-          {next ? (
-            <Link to={`/stage/${next.id}`} className="text-accent">
-              Etappe {next.number} →
-            </Link>
-          ) : (
-            <span className="text-faint">Etappe →</span>
+          {isTtt && (
+            <div className="label mt-1 text-accent">Mannschaftszeitfahren</div>
           )}
         </div>
-      </div>
-      <h1 className="mt-2 text-xl font-bold text-ink">
-        {stageLabel(tour.kind, stage)}
-        {stage.start_city && stage.finish_city
-          ? ` · ${stage.start_city} → ${stage.finish_city}`
-          : ""}
-        {isTtt && (
-          <span className="ml-2 text-sm font-normal text-accent">
-            Mannschaftszeitfahren
-          </span>
-        )}
-      </h1>
-      <p className="text-sm text-muted">
-        Start: {formatLocal(stage.start_time)}{" "}
-        {!started && (
-          <>
-            (<Countdown iso={stage.start_time} />)
-          </>
-        )}
-      </p>
-
-      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
-        {stage.type && <span>{TYPE_LABEL[stage.type]}</span>}
-        {stage.distance_km != null && <span>{stage.distance_km} km</span>}
       </div>
 
       <StageProfile
@@ -276,9 +292,7 @@ export function StageDetail() {
         </div>
       ) : (
         <div className="mt-5">
-          <h2 className="mb-2 font-semibold text-ink">
-            Tipps & Ergebnis
-          </h2>
+          <h2 className="mb-2 font-semibold text-ink">Tipps & Ergebnis</h2>
           <a
             href={pcsStageUrl(
               tour.pcs_slug,
@@ -318,11 +332,7 @@ export function StageDetail() {
                     {t.player?.display_name ?? "—"}
                   </span>
                   <span
-                    className={
-                      correct
-                        ? "font-semibold text-hit"
-                        : "text-ink"
-                    }
+                    className={correct ? "font-semibold text-hit" : "text-ink"}
                   >
                     {label}
                   </span>
