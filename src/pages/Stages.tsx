@@ -7,8 +7,8 @@ import {
   listStages,
   type MyStageTip,
 } from "../lib/queries";
-import type { Stage } from "../lib/types";
-import { formatLocal, isPast } from "../lib/time";
+import type { Stage, Tour } from "../lib/types";
+import { formatLocal, isPast, isToday } from "../lib/time";
 import {
   stageHasResult,
   stageWinnerLabel,
@@ -26,6 +26,105 @@ const TYPE_SHORT: Record<string, string> = {
   itt: "Einzelzeitfahren",
   ttt: "Mannschaftszeitfahren",
 };
+
+interface RowData {
+  tipLabel: string;
+  tipColor: string;
+  correct: boolean;
+  resolved: boolean;
+  started: boolean;
+  hasTip: boolean;
+  winner: string;
+}
+
+function describe(
+  s: Stage,
+  tip: MyStageTip | undefined,
+  riderName: Map<string, string>,
+): RowData {
+  const resolved = stageHasResult(s);
+  return {
+    resolved,
+    correct: tip ? stageWinnerMatch(s, tip) : false,
+    started: isPast(s.start_time),
+    hasTip: !!tip,
+    winner: stageWinnerLabel(s, riderName),
+    tipLabel: tip
+      ? (tip.team ?? riderName.get(tip.rider_id ?? "") ?? "—")
+      : "kein Tipp",
+    tipColor: resolved
+      ? tip && stageWinnerMatch(s, tip)
+        ? "text-hit"
+        : tip
+          ? "text-miss"
+          : "text-faint"
+      : tip
+        ? "text-muted"
+        : "text-faint",
+  };
+}
+
+// One row, shared by the featured block and the full list so the two can never
+// drift apart.
+function StageRow({
+  stage: s,
+  tour,
+  data,
+}: {
+  stage: Stage;
+  tour: Tour;
+  data: RowData;
+}) {
+  return (
+    <Link
+      to={`/stage/${s.id}`}
+      className="relative grid grid-cols-[auto_1fr_auto] items-center gap-3 overflow-hidden py-3 hover:bg-surface2"
+    >
+      <StageWatermark
+        raceSlug={tour.pcs_slug}
+        stageNumber={s.number}
+        type={s.type}
+      />
+      {/* stage number as a race plate; one-day races have nothing to number */}
+      {tour.kind !== "one_day" && (
+        <div className="relative w-11 text-center">
+          <div className="plate text-2xl leading-none text-ink">{s.number}</div>
+          <div className="label mt-0.5 text-[0.5rem] text-faint">Etappe</div>
+        </div>
+      )}
+      <div className="relative min-w-0">
+        <div className="truncate font-semibold text-ink">
+          {s.start_city && s.finish_city
+            ? `${s.start_city} → ${s.finish_city}`
+            : stageLabel(tour.kind, s)}
+        </div>
+        <div className="data mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted">
+          {s.distance_km != null && <span>{s.distance_km} km</span>}
+          {s.type && <span>{TYPE_SHORT[s.type]}</span>}
+          <span>{formatLocal(s.start_time)}</span>
+        </div>
+      </div>
+      <div className="relative pr-1 text-right">
+        {data.started ? (
+          <span className="label text-faint">
+            {data.resolved ? "beendet" : "läuft"}
+          </span>
+        ) : (
+          <span className="data text-sm font-semibold text-accent">
+            <Countdown iso={s.start_time} />
+          </span>
+        )}
+        {data.resolved && (
+          <div className="truncate text-xs text-muted">{data.winner}</div>
+        )}
+        <div className={`truncate text-xs ${data.tipColor}`}>
+          {data.tipLabel}
+          {data.resolved && data.hasTip && (data.correct ? " ✓" : " ✗")}
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export function Stages() {
   const { tour, userId } = useApp();
@@ -64,88 +163,45 @@ export function Stages() {
       </div>
     );
 
-  const oneDay = tour.kind === "one_day";
+  // Today's stage leads. On a rest day — or before the race starts — the next one
+  // stands in, so the top of the page always answers "what is on".
+  const today = stages.find((s) => isToday(s.start_time));
+  const next = stages.find((s) => !isPast(s.start_time));
+  const featured = today ?? next ?? null;
 
   return (
-    <ul className="divide-y divide-line border-y border-line">
-      {stages.map((s) => {
-        const started = isPast(s.start_time);
-        const tip = tips.get(s.id);
-        const resolved = stageHasResult(s);
-        const tipLabel = tip
-          ? (tip.team ?? riderName.get(tip.rider_id ?? "") ?? "—")
-          : "kein Tipp";
-        const correct = tip ? stageWinnerMatch(s, tip) : false;
-        const tipColor = resolved
-          ? correct
-            ? "text-hit"
-            : tip
-              ? "text-miss"
-              : "text-faint"
-          : tip
-            ? "text-muted"
-            : "text-faint";
-        return (
-          <li key={s.id}>
-            <Link
-              to={`/stage/${s.id}`}
-              className="relative grid grid-cols-[auto_1fr_auto] items-center gap-3 overflow-hidden py-3 hover:bg-surface2"
-            >
-              <StageWatermark
-                raceSlug={tour.pcs_slug}
-                stageNumber={s.number}
-                type={s.type}
-              />
-              {/* stage number as a race plate; one-day races have nothing to number */}
-              {!oneDay && (
-                <div className="relative w-11 text-center">
-                  <div className="plate text-2xl leading-none text-ink">
-                    {s.number}
-                  </div>
-                  <div className="label mt-0.5 text-[0.5rem] text-faint">
-                    Etappe
-                  </div>
-                </div>
-              )}
-              <div className="relative min-w-0">
-                <div className="truncate font-semibold text-ink">
-                  {s.start_city && s.finish_city
-                    ? `${s.start_city} → ${s.finish_city}`
-                    : stageLabel(tour.kind, s)}
-                </div>
-                <div className="data mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted">
-                  {s.distance_km != null && <span>{s.distance_km} km</span>}
-                  {s.type && <span>{TYPE_SHORT[s.type]}</span>}
-                  <span>{formatLocal(s.start_time)}</span>
-                </div>
-              </div>
-              <div className="relative pr-1 text-right">
-                {started ? (
-                  <span className="label text-faint">
-                    {resolved ? "beendet" : "läuft"}
-                  </span>
-                ) : (
-                  <span className="data text-sm font-semibold text-accent">
-                    <Countdown iso={s.start_time} />
-                  </span>
-                )}
-                {resolved && (
-                  <div className="truncate text-xs text-muted">
-                    {stageWinnerLabel(s, riderName)}
-                  </div>
-                )}
-                <div className={`truncate text-xs ${tipColor}`}>
-                  {tipLabel}
-                  {resolved && tip && (correct ? " ✓" : " ✗")}
-                </div>
-              </div>
-            </Link>
-          </li>
-        );
-      })}
-      {stages.length === 0 && (
-        <p className="text-muted">Noch keine {stagesNounPlural(tour.kind)}.</p>
+    <div>
+      {featured && (
+        <section className="mt-3 border-2 border-ink">
+          <h2 className="label border-b border-line px-3 py-1.5 text-faint">
+            {today ? "Heute" : "Als Nächstes"}
+          </h2>
+          <div className="px-3">
+            <StageRow
+              stage={featured}
+              tour={tour}
+              data={describe(featured, tips.get(featured.id), riderName)}
+            />
+          </div>
+        </section>
       )}
-    </ul>
+
+      <ul className="mt-6 divide-y divide-line border-y border-line">
+        {stages.map((s) => (
+          <li key={s.id}>
+            <StageRow
+              stage={s}
+              tour={tour}
+              data={describe(s, tips.get(s.id), riderName)}
+            />
+          </li>
+        ))}
+        {stages.length === 0 && (
+          <p className="py-3 text-muted">
+            Noch keine {stagesNounPlural(tour.kind)}.
+          </p>
+        )}
+      </ul>
+    </div>
   );
 }
