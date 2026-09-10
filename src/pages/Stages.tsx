@@ -35,6 +35,7 @@ interface RowData {
   started: boolean;
   hasTip: boolean;
   winner: string;
+  isVoid: boolean;
 }
 
 function describe(
@@ -43,8 +44,10 @@ function describe(
   riderName: Map<string, string>,
 ): RowData {
   const resolved = stageHasResult(s);
+  const isVoid = s.status === "void";
   return {
     resolved,
+    isVoid,
     correct: tip ? stageWinnerMatch(s, tip) : false,
     started: isPast(s.start_time),
     hasTip: !!tip,
@@ -52,15 +55,17 @@ function describe(
     tipLabel: tip
       ? (tip.team ?? riderName.get(tip.rider_id ?? "") ?? "—")
       : "kein Tipp",
-    tipColor: resolved
-      ? tip && stageWinnerMatch(s, tip)
-        ? "text-hit"
+    tipColor: isVoid
+      ? "text-faint"
+      : resolved
+        ? tip && stageWinnerMatch(s, tip)
+          ? "text-hit"
+          : tip
+            ? "text-miss"
+            : "text-faint"
         : tip
-          ? "text-miss"
-          : "text-faint"
-      : tip
-        ? "text-muted"
-        : "text-faint",
+          ? "text-muted"
+          : "text-faint",
   };
 }
 
@@ -105,7 +110,9 @@ function StageRow({
         </div>
       </div>
       <div className="relative pr-1 text-right">
-        {data.started ? (
+        {data.isVoid ? (
+          <span className="label text-miss">abgebrochen</span>
+        ) : data.started ? (
           <span className="label text-faint">
             {data.resolved ? "beendet" : "läuft"}
           </span>
@@ -114,12 +121,15 @@ function StageRow({
             <Countdown iso={s.start_time} />
           </span>
         )}
-        {data.resolved && (
+        {data.resolved && !data.isVoid && (
           <div className="truncate text-xs text-muted">{data.winner}</div>
         )}
         <div className={`truncate text-xs ${data.tipColor}`}>
           {data.tipLabel}
-          {data.resolved && data.hasTip && (data.correct ? " ✓" : " ✗")}
+          {!data.isVoid &&
+            data.resolved &&
+            data.hasTip &&
+            (data.correct ? " ✓" : " ✗")}
         </div>
       </div>
     </Link>

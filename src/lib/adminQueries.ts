@@ -99,6 +99,16 @@ export function adminSetStageTip(a: {
   });
 }
 
+export function adminSetStageVoid(
+  stageId: string,
+  isVoid: boolean,
+): Promise<void> {
+  return rpc("admin_set_stage_void", {
+    p_stage_id: stageId,
+    p_void: isVoid,
+  });
+}
+
 // --- Free-form questions (Phase 2) ---
 
 export function adminCreateQuestion(a: {

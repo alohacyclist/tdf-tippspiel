@@ -19,6 +19,7 @@ import {
   adminSetRole,
   adminSetStageResult,
   adminSetStageTip,
+  adminSetStageVoid,
   adminSetStatus,
 } from "../lib/adminQueries";
 import type {
@@ -1001,7 +1002,30 @@ function StageResult({
     }
   }
 
-  const canSubmit = stageId && (isTtt ? !!team : !!rider);
+  async function toggleVoid() {
+    if (!stage) return;
+    const isVoid = stage.status === "void";
+    if (
+      !isVoid &&
+      !window.confirm(
+        `Etappe ${stage.number} als abgebrochen werten? Ein eingetragener Sieger wird entfernt und die Etappe zählt für niemanden Punkte.`,
+      )
+    )
+      return;
+    setBusy(true);
+    setError(null);
+    try {
+      await adminSetStageVoid(stage.id, !isVoid);
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Fehler");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const isVoid = stage?.status === "void";
+  const canSubmit = stageId && !isVoid && (isTtt ? !!team : !!rider);
 
   return (
     <form
@@ -1022,7 +1046,15 @@ function StageResult({
         ))}
       </select>
 
+      {stage && isVoid && (
+        <p className="rounded-lg bg-miss/10 p-2 text-sm text-miss">
+          Diese Etappe ist als abgebrochen gewertet — sie zählt für niemanden
+          Punkte.
+        </p>
+      )}
+
       {stage &&
+        !isVoid &&
         (isTtt ? (
           <select
             value={team}
@@ -1040,20 +1072,38 @@ function StageResult({
           <RiderCombobox riders={riders} value={rider} onSelect={setRider} />
         ))}
 
-      <label className="flex items-center gap-2 text-sm text-muted">
-        <input
-          type="checkbox"
-          checked={close}
-          onChange={(e) => setClose(e.target.checked)}
-        />
-        Etappe schließen (status = finished)
-      </label>
-      <button
-        disabled={busy || !canSubmit}
-        className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-contrast disabled:opacity-50"
-      >
-        Speichern
-      </button>
+      {!isVoid && (
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <input
+            type="checkbox"
+            checked={close}
+            onChange={(e) => setClose(e.target.checked)}
+          />
+          Etappe schließen (status = finished)
+        </label>
+      )}
+      {!isVoid && (
+        <button
+          disabled={busy || !canSubmit}
+          className="rounded-lg bg-accent-solid px-3 py-2 text-sm font-semibold text-accent-contrast disabled:opacity-50"
+        >
+          Speichern
+        </button>
+      )}
+      {stage && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={toggleVoid}
+          className={`rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-50 ${
+            isVoid
+              ? "bg-surface2 text-ink"
+              : "border border-miss/50 text-miss hover:bg-miss/10"
+          }`}
+        >
+          {isVoid ? "Abbruch zurücknehmen" : "Etappe abgebrochen / annulliert"}
+        </button>
+      )}
       {error && <p className="text-sm text-miss">{error}</p>}
     </form>
   );

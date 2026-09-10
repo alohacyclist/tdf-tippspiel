@@ -136,8 +136,10 @@ export function StageDetail() {
       .catch(() => {});
   }, [stageId]);
 
+  // a void stage will never get a winner — polling for one would never stop
   const awaitingResult =
     stage != null &&
+    stage.status !== "void" &&
     isPast(stage.start_time) &&
     stage.winner_rider_id === null &&
     stage.winner_team === null;
@@ -227,7 +229,11 @@ export function StageDetail() {
         <div className="shrink-0 text-right">
           {started ? (
             <span className="label text-faint">
-              {stage.winner_rider_id || stage.winner_team ? "beendet" : "läuft"}
+              {stage.status === "void"
+                ? "abgebrochen"
+                : stage.winner_rider_id || stage.winner_team
+                  ? "beendet"
+                  : "läuft"}
             </span>
           ) : (
             <span className="data text-sm font-semibold text-accent">
@@ -293,6 +299,11 @@ export function StageDetail() {
       ) : (
         <div className="mt-5">
           <h2 className="mb-2 font-semibold text-ink">Tipps & Ergebnis</h2>
+          {stage.status === "void" && (
+            <p className="mb-3 rounded-lg bg-miss/10 p-2 text-sm text-miss">
+              Etappe abgebrochen — sie zählt für niemanden Punkte.
+            </p>
+          )}
           <a
             href={pcsStageUrl(
               tour.pcs_slug,
