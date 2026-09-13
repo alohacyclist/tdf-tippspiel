@@ -1,7 +1,9 @@
 name: ingest-results
 
-# Automated stage-winner ingestion. Adjust the cron window per race (below = Vuelta
-# afternoons, Aug/Sep). Manual runs default to dry-run for safe testing.
+# Automated stage-winner ingestion. The script itself decides whether a race is on
+# (from the stage dates) and exits immediately if not, so the schedule can stay broad
+# and still cover spring monuments and the October races. Manual runs default to
+# dry-run for safe testing.
 on:
   workflow_dispatch:
     inputs:
@@ -10,8 +12,8 @@ on:
         type: boolean
         default: true
   schedule:
-    # every 20 min, 12:00–20:00 UTC, in August and September
-    - cron: "*/20 12-20 * 8,9 *"
+    # every 20 min, 10:00–20:00 UTC, all year
+    - cron: "*/20 10-20 * * *"
 
 concurrency:
   group: ingest-results
