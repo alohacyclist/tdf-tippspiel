@@ -90,7 +90,11 @@ const BY_SLUG: Record<string, TourTheme> = {
   "tour-de-france": YELLOW,
   "vuelta-a-espana": RED,
   "giro-d-italia": PINK,
+  // every elite Worlds event races for the same rainbow jersey
   "world-championship": RAINBOW,
+  "world-championship-itt": RAINBOW,
+  "world-championship-we": RAINBOW,
+  "world-championship-itt-we": RAINBOW,
   "milano-sanremo": SEA,
   "ronde-van-vlaanderen": FLEMISH_GOLD,
   "paris-roubaix": COBBLE,
