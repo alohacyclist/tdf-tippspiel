@@ -66,6 +66,19 @@ export async function getStage(stageId: string): Promise<Stage | null> {
   );
 }
 
+// Every stage of several tours at once — the championship board shows the races
+// of all four Worlds tours together.
+export async function listStagesForTours(tourIds: string[]): Promise<Stage[]> {
+  if (tourIds.length === 0) return [];
+  return unwrap(
+    await supabase
+      .from("stages")
+      .select("*")
+      .in("tour_id", tourIds)
+      .order("start_time"),
+  );
+}
+
 export async function listActiveRiders(tourId: string): Promise<Rider[]> {
   return unwrap(
     await supabase
@@ -73,6 +86,20 @@ export async function listActiveRiders(tourId: string): Promise<Rider[]> {
       .select("*")
       .eq("tour_id", tourId)
       .eq("is_active", true)
+      .order("name"),
+  );
+}
+
+// Startlists of several tours at once, for the championship board. Each race has
+// its own, so the caller groups them by rider.tour_id. Includes riders who are no
+// longer active — a name still has to resolve for an old tip or a winner.
+export async function listRidersForTours(tourIds: string[]): Promise<Rider[]> {
+  if (tourIds.length === 0) return [];
+  return unwrap(
+    await supabase
+      .from("riders")
+      .select("*")
+      .in("tour_id", tourIds)
       .order("name"),
   );
 }
@@ -241,6 +268,21 @@ export async function listPlayerStageTips(
   );
 }
 
+// Another player's tips across a whole championship (several tours at once).
+export async function listPlayerStageTipsForTours(
+  tourIds: string[],
+  userId: string,
+): Promise<PlayerStageTip[]> {
+  if (tourIds.length === 0) return [];
+  return unwrap(
+    await supabase
+      .from("stage_tips")
+      .select("stage_id, rider_id, team, rider:riders(name)")
+      .in("tour_id", tourIds)
+      .eq("user_id", userId),
+  );
+}
+
 export interface MyStageTip {
   stage_id: string;
   rider_id: string | null;
@@ -308,6 +350,36 @@ export async function getLeaderboard(
       .eq("tour_id", tourId)
       .order("stage_points", { ascending: false })
       .order("correct_winners", { ascending: false }),
+  );
+}
+
+// Standings across the races of one championship: the leaderboard view is per
+// tour, and the Worlds are four of them, so the per-player rows are summed here.
+// A single id just returns that tour's rows.
+export async function getLeaderboardForTours(
+  tourIds: string[],
+): Promise<LeaderboardRow[]> {
+  if (tourIds.length === 0) return [];
+  if (tourIds.length === 1) return getLeaderboard(tourIds[0]);
+  const rows = unwrap<LeaderboardRow[]>(
+    await supabase.from("leaderboard").select("*").in("tour_id", tourIds),
+  );
+  const byUser = new Map<string, LeaderboardRow>();
+  for (const r of rows) {
+    const sum = byUser.get(r.user_id);
+    if (!sum) {
+      byUser.set(r.user_id, { ...r, tour_id: tourIds[0] });
+      continue;
+    }
+    sum.display_name = sum.display_name ?? r.display_name;
+    sum.correct_winners += r.correct_winners;
+    sum.stage_points += r.stage_points;
+    sum.special_points += r.special_points;
+    sum.question_points += r.question_points;
+  }
+  return [...byUser.values()].sort(
+    (a, b) =>
+      b.stage_points - a.stage_points || b.correct_winners - a.correct_winners,
   );
 }
 
