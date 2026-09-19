@@ -1,15 +1,18 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useApp } from "../lib/appContext";
 import {
-  getLeaderboard,
+  getLeaderboardForTours,
   getSeasonLeaderboard,
-  listPlayerStageTips,
+  listPlayerStageTipsForTours,
   listRiders,
+  listRidersForTours,
   listStages,
+  listStagesForTours,
   type PlayerStageTip,
 } from "../lib/queries";
 import type { LeaderboardRow, SeasonLeaderboardRow, Stage } from "../lib/types";
 import { stageHasResult } from "../lib/stageResult";
+import { groupTours } from "../lib/eventGroup";
 import { tourTheme } from "../lib/theme";
 import { Confetti } from "../components/Confetti";
 import { PlayerStageBreakdown } from "../components/PlayerStageBreakdown";
@@ -34,7 +37,7 @@ type View = "tour" | "season";
 type Row = LeaderboardRow | SeasonLeaderboardRow;
 
 export function Leaderboard() {
-  const { tour } = useApp();
+  const { tour, tours } = useApp();
   const [view, setView] = useState<View>("tour");
   const [tourRows, setTourRows] = useState<LeaderboardRow[]>([]);
   const [seasonRows, setSeasonRows] = useState<SeasonLeaderboardRow[]>([]);
@@ -51,22 +54,36 @@ export function Leaderboard() {
   const [loadingUser, setLoadingUser] = useState<string | null>(null);
   const [tipError, setTipError] = useState<Record<string, string>>({});
 
+  // The Worlds are four tours; their standings belong together, so the "tour"
+  // view sums the whole championship. A standalone race is a group of one.
+  const group = useMemo(() => groupTours(tours, tour), [tours, tour]);
+  const isEvent = group.length > 1;
+  const groupIds = group.map((t) => t.id).join(",");
+  const raceName = useMemo(
+    () => new Map(group.map((t) => [t.id, t.name])),
+    [group],
+  );
+
   useEffect(() => {
+    const ids = groupIds.split(",");
     setLoading(true);
-    Promise.all([getLeaderboard(tour.id), getSeasonLeaderboard(tour.year)])
+    Promise.all([getLeaderboardForTours(ids), getSeasonLeaderboard(tour.year)])
       .then(([t, s]) => {
         setTourRows(t);
         setSeasonRows(s);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-    Promise.all([listStages(tour.id), listRiders(tour.id)])
+    Promise.all([
+      isEvent ? listStagesForTours(ids) : listStages(tour.id),
+      isEvent ? listRidersForTours(ids) : listRiders(tour.id),
+    ])
       .then(([s, r]) => {
         setStages(s);
         setRiderName(new Map(r.map((x) => [x.id, x.name])));
       })
       .catch((e) => setError(e.message));
-  }, [tour.id, tour.year]);
+  }, [tour.id, tour.year, groupIds, isEvent]);
 
   // Fire confetti on the first Rangliste visit per tour per browser session.
   useEffect(() => {
@@ -93,7 +110,7 @@ export function Leaderboard() {
     setOpenId(userId);
     if (tipsByUser[userId] || loadingUser === userId) return;
     setLoadingUser(userId);
-    listPlayerStageTips(tour.id, userId)
+    listPlayerStageTipsForTours(groupIds.split(","), userId)
       .then((t) => setTipsByUser((prev) => ({ ...prev, [userId]: t })))
       .catch((e) => setTipError((prev) => ({ ...prev, [userId]: e.message })))
       .finally(() => setLoadingUser((l) => (l === userId ? null : l)));
@@ -128,14 +145,20 @@ export function Leaderboard() {
                 : "bg-surface2 text-muted"
             }`}
           >
-            {v === "tour" ? "Diese Tour" : `Saison ${tour.year}`}
+            {v === "tour"
+              ? isEvent
+                ? "Dieses Event"
+                : "Diese Tour"
+              : `Saison ${tour.year}`}
           </button>
         ))}
       </div>
 
       <p className="mb-3 text-xs text-faint">
         {view === "tour"
-          ? "Rang nach Etappen-Punkten. Zeile antippen für die Etappen-Tipps."
+          ? isEvent
+            ? "Alle Rennen dieses Events zusammen. Zeile antippen für die Tipps."
+            : "Rang nach Etappen-Punkten. Zeile antippen für die Etappen-Tipps."
           : `Gesamtwertung ${tour.year} über alle Rennen.`}
       </p>
 
@@ -232,6 +255,12 @@ export function Leaderboard() {
                           tips={tipsByUser[r.user_id]}
                           loading={loadingUser === r.user_id}
                           error={tipError[r.user_id]}
+                          labelFor={
+                            isEvent
+                              ? (st) =>
+                                  st.name ?? raceName.get(st.tour_id) ?? "—"
+                              : undefined
+                          }
                         />
                       </td>
                     </tr>

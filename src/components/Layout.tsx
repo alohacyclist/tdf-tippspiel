@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { signOut } from "../lib/supabase";
 import type { AppCtx } from "../lib/appContext";
@@ -5,6 +6,13 @@ import { stagesNounPlural } from "../lib/stageLabel";
 import { tourTheme } from "../lib/theme";
 import { useTheme } from "../hooks/useTheme";
 import { groupByYear, tourStatus } from "../lib/tourStatus";
+import {
+  entryKey,
+  eventName,
+  eventSpan,
+  groupTours,
+  tourEntries,
+} from "../lib/eventGroup";
 
 const THEME_ICON = { system: "◐", light: "☀", dark: "☾" } as const;
 const THEME_TITLE = {
@@ -21,13 +29,26 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
   const isGrandTour = ctx.tour.kind === "grand_tour";
   const gradient = tourTheme(ctx.tour.pcs_slug).titleGradient;
   const { choice, cycle } = useTheme();
-  const status = tourStatus(ctx.tour);
+  // A championship is one line in the switcher, not one per race: the Worlds are
+  // four tours, and all four are listed and tipped together on the stage page.
+  const entries = useMemo(() => tourEntries(ctx.tours), [ctx.tours]);
+  const group = useMemo(
+    () => groupTours(ctx.tours, ctx.tour),
+    [ctx.tours, ctx.tour],
+  );
+  const status = tourStatus(eventSpan(group));
+
   // Switching the race also goes back to its stage list: staying on a
   // /stage/:id of the race we just left would pair that stage with the new
   // race's riders, and such a tip is rejected by RLS on save.
   function selectTour(tourId: string) {
     ctx.setTour(tourId);
     navigate("/");
+  }
+
+  function selectEntry(key: string) {
+    const entry = entries.find((e) => e.key === key);
+    if (entry) selectTour(entry.primary.id);
   }
 
   const tabs = [
@@ -50,18 +71,18 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
           />
         )}
         <div className="flex min-w-0 items-center gap-2">
-          {ctx.tours.length > 1 ? (
+          {entries.length > 1 ? (
             <select
-              value={ctx.tour.id}
-              onChange={(e) => selectTour(e.target.value)}
+              value={entryKey(ctx.tour)}
+              onChange={(e) => selectEntry(e.target.value)}
               className="max-w-[11rem] truncate rounded-lg border border-line bg-surface px-2 py-1 text-sm font-bold text-accent"
               aria-label="Tour wählen"
             >
-              {groupByYear(ctx.tours).map(([year, tours]) => (
+              {groupByYear(entries).map(([year, yearEntries]) => (
                 <optgroup key={year} label={String(year)}>
-                  {tours.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
+                  {yearEntries.map((e) => (
+                    <option key={e.key} value={e.key}>
+                      {e.label}
                     </option>
                   ))}
                 </optgroup>
@@ -72,7 +93,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
               className={`font-display truncate text-xl font-bold uppercase tracking-tight ${gradient ? "bg-clip-text text-transparent" : "text-ink"}`}
               style={gradient ? { backgroundImage: gradient } : undefined}
             >
-              {ctx.tour.name}
+              {eventName(ctx.tour)}
             </span>
           )}
           {status !== "finished" && status !== "unknown" && (
