@@ -32,6 +32,8 @@ import type {
 import { formatLocal, isPast } from "../lib/time";
 import { RiderCombobox } from "../components/RiderCombobox";
 import { QuestionsSection } from "../components/AdminQuestions";
+import { groupTours } from "../lib/eventGroup";
+import { stagesNounPlural } from "../lib/stageLabel";
 
 function toIso(local: string): string {
   return new Date(local).toISOString();
@@ -113,7 +115,7 @@ function AdminTodo({
 }
 
 export function Admin() {
-  const { tour, isAdmin, canEdit } = useApp();
+  const { tour, tours, setTour, isAdmin, canEdit } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
   const [riders, setRiders] = useState<Rider[]>([]);
   const [cls, setCls] = useState<Classification[]>([]);
@@ -145,6 +147,7 @@ export function Admin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tour.id]);
 
+  const group = useMemo(() => groupTours(tours, tour), [tours, tour]);
   const stageById = useMemo(
     () => new Map(stages.map((s) => [s.id, s])),
     [stages],
@@ -203,10 +206,30 @@ export function Admin() {
   return (
     <div className="py-3">
       <Link to="/" className="text-sm text-muted">
-        ← Etappen
+        ← {stagesNounPlural(tour.kind)}
       </Link>
       <h1 className="mt-2 text-xl font-bold text-ink">Admin</h1>
       {error && <p className="mt-2 text-sm text-miss">{error}</p>}
+
+      {/* The switcher shows a championship as a single line, but every race of it
+          is its own tour with its own stage, startlist and questions — so admin
+          work needs the races back one by one. */}
+      {group.length > 1 && (
+        <label className="mt-3 flex items-center gap-2 text-sm text-muted">
+          Rennen
+          <select
+            value={tour.id}
+            onChange={(e) => setTour(e.target.value)}
+            className="min-w-0 flex-1 rounded-lg border border-line bg-surface px-2 py-1 text-ink"
+          >
+            {group.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       <AdminTodo
         pendingStages={pendingStages}

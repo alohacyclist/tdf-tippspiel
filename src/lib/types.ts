@@ -17,6 +17,10 @@ export interface Tour {
   is_active: boolean;
   pcs_slug: string;
   kind: TourKind;
+  // Championship this race is part of (the four Worlds races share one), or null
+  // for a standalone race. Races of a group are shown and tipped on one page.
+  event_group: string | null;
+  event_group_name: string | null;
   // first/last stage start (derived in listTours); null if no stages seeded yet.
   starts_at: string | null;
   ends_at: string | null;

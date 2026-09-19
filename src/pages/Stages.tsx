@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "../lib/appContext";
 import {
   listMyStageTips,
   listRiders,
+  listRidersForTours,
   listStages,
+  listStagesForTours,
   type MyStageTip,
 } from "../lib/queries";
-import type { Stage, Tour } from "../lib/types";
+import type { Rider, Stage, Tour } from "../lib/types";
 import { formatLocal, isPast, isToday } from "../lib/time";
 import {
   stageHasResult,
@@ -18,6 +20,8 @@ import { stageLabel, stagesNounPlural } from "../lib/stageLabel";
 import { Countdown } from "../components/Countdown";
 import { SkeletonList } from "../components/Skeleton";
 import { StageWatermark } from "../components/StageWatermark";
+import { RaceTipCard } from "../components/RaceTipCard";
+import { eventName, groupTours } from "../lib/eventGroup";
 
 const TYPE_SHORT: Record<string, string> = {
   flat: "Flach",
@@ -137,33 +141,49 @@ function StageRow({
 }
 
 export function Stages() {
-  const { tour, userId } = useApp();
+  const { tour, tours, userId } = useApp();
   const [stages, setStages] = useState<Stage[]>([]);
   const [tips, setTips] = useState<Map<string, MyStageTip>>(new Map());
-  const [riderName, setRiderName] = useState<Map<string, string>>(new Map());
+  const [riders, setRiders] = useState<Rider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // The Worlds are four races in four tours. Show them as one event: every race
+  // on this page, each tippable in place, instead of one race per switcher entry.
+  const group = useMemo(() => groupTours(tours, tour), [tours, tour]);
+  const isEvent = group.length > 1;
+  const groupIds = group.map((t) => t.id).join(",");
+
+  const riderName = useMemo(
+    () => new Map(riders.map((r) => [r.id, r.name])),
+    [riders],
+  );
 
   useEffect(() => {
     let active = true;
     setLoading(true);
+    const ids = groupIds.split(",");
     Promise.all([
-      listStages(tour.id),
+      isEvent ? listStagesForTours(ids) : listStages(tour.id),
       listMyStageTips(userId),
-      listRiders(tour.id),
+      isEvent ? listRidersForTours(ids) : listRiders(tour.id),
     ])
       .then(([s, ts, rs]) => {
         if (!active) return;
         setStages(s);
         setTips(new Map(ts.map((t) => [t.stage_id, t])));
-        setRiderName(new Map(rs.map((r) => [r.id, r.name])));
+        setRiders(rs);
       })
       .catch((e) => active && setError(e.message))
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
-  }, [tour.id, userId]);
+  }, [tour.id, groupIds, isEvent, userId]);
+
+  function rememberTip(tip: MyStageTip) {
+    setTips((prev) => new Map(prev).set(tip.stage_id, tip));
+  }
 
   if (error) return <p className="text-miss">{error}</p>;
   if (loading)
@@ -172,6 +192,42 @@ export function Stages() {
         <SkeletonList rows={8} height="h-[68px]" />
       </div>
     );
+
+  if (isEvent) {
+    const tourById = new Map(group.map((t) => [t.id, t]));
+    const open = stages.filter((s) => !isPast(s.start_time)).length;
+    return (
+      <div className="py-3">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
+          {eventName(tour)}
+        </h1>
+        <p className="mb-4 mt-1 text-sm text-muted">
+          Alle {stages.length} Rennen — Frauen und Männer, Straße und Zeitfahren.
+          {open > 0 && " Tipp direkt hier abgeben, änderbar bis zum Start."}
+        </p>
+        <div className="space-y-3">
+          {stages.map((s) => {
+            const t = tourById.get(s.tour_id);
+            if (!t) return null;
+            return (
+              <RaceTipCard
+                key={s.id}
+                tour={t}
+                stage={s}
+                riders={riders.filter((r) => r.tour_id === s.tour_id)}
+                tip={tips.get(s.id)}
+                userId={userId}
+                onSaved={rememberTip}
+              />
+            );
+          })}
+          {stages.length === 0 && (
+            <p className="py-3 text-muted">Noch keine Rennen.</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // Today's stage leads. On a rest day — or before the race starts — the next one
   // stands in, so the top of the page always answers "what is on".
