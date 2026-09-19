@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { signOut } from "../lib/supabase";
 import type { AppCtx } from "../lib/appContext";
 import { stagesNounPlural } from "../lib/stageLabel";
@@ -17,10 +17,19 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
   `text-sm ${isActive ? "text-accent" : "text-muted hover:text-ink"}`;
 
 export function Layout({ ctx }: { ctx: AppCtx }) {
+  const navigate = useNavigate();
   const isGrandTour = ctx.tour.kind === "grand_tour";
   const gradient = tourTheme(ctx.tour.pcs_slug).titleGradient;
   const { choice, cycle } = useTheme();
   const status = tourStatus(ctx.tour);
+  // Switching the race also goes back to its stage list: staying on a
+  // /stage/:id of the race we just left would pair that stage with the new
+  // race's riders, and such a tip is rejected by RLS on save.
+  function selectTour(tourId: string) {
+    ctx.setTour(tourId);
+    navigate("/");
+  }
+
   const tabs = [
     { to: "/", label: stagesNounPlural(ctx.tour.kind), end: true },
     ...(isGrandTour
@@ -44,7 +53,7 @@ export function Layout({ ctx }: { ctx: AppCtx }) {
           {ctx.tours.length > 1 ? (
             <select
               value={ctx.tour.id}
-              onChange={(e) => ctx.setTour(e.target.value)}
+              onChange={(e) => selectTour(e.target.value)}
               className="max-w-[11rem] truncate rounded-lg border border-line bg-surface px-2 py-1 text-sm font-bold text-accent"
               aria-label="Tour wählen"
             >
