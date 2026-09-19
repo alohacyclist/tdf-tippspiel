@@ -48,7 +48,7 @@ Frontend-Checks:
 npm i -g supabase
 supabase login
 supabase link --project-ref <PROJECT_REF>
-supabase db push          # wendet alle Migrationen an (aktuell 0001–0029)
+supabase db push          # wendet alle Migrationen an (aktuell 0001–0034)
 ```
 
 **Project Settings → API** liefert `Project URL` und `anon public` key.
@@ -98,6 +98,14 @@ genau einer Etappe (`tours.kind = 'one_day'`).
 
 Vorlagen: `0019` (Grand Tour), `0027` (Eintagesrennen), `0021` (Startliste abgleichen).
 
+**Meisterschaft mit mehreren Rennen** (WM: Straße und Zeitfahren, Frauen und Männer):
+jedes Rennen bleibt eine eigene Tour — eigene Startliste, eigene Punkte, und RLS
+bindet einen Tipp an sein Rennen. Zusammengehalten werden sie über
+`tours.event_group` (+ `event_group_name`, Vorlage `0034`): gleicher Wert = eine
+Zeile im Umschalter, dahinter eine Seite mit allen Rennen, jedes einzeln tippbar,
+und eine gemeinsame Rangliste. `null` heißt Einzelrennen — Grand Tours und
+Monumente bleiben, wie sie sind.
+
 ## Ergebnis-Import (optional)
 
 `scripts/ingest/` holt Etappensieger automatisch und schreibt sie über einen
@@ -120,6 +128,7 @@ Hell und Dunkel folgen dem System des Geräts; alle Farben laufen über Tokens i
 
 ```bash
 pnpm typecheck
+pnpm test            # Vitest (Frontend)
 supabase test db     # pgTAP: RLS, Reveal, Scoring, Rollen (braucht Docker)
 ```
 
@@ -127,8 +136,13 @@ Die Testabdeckung liegt bewusst in der Datenbank, weil dort die Spielregeln steh
 Reveal vor/nach Start, Tipp vor/nach Deadline, gesperrte Accounts, Rollen-Gates und
 die Punkte-Mathematik (`supabase/tests/`).
 
-Vitest ist eingerichtet (`pnpm test`), aber es gibt noch **keine** Frontend-Tests —
-der Befehl endet entsprechend mit „No test files found".
+Im Frontend wird nur getestet, was Regeln kennt statt Pixel: die Event-Gruppierung
+(`src/lib/eventGroup.test.ts`) — welche Rennen zusammengehören, was der Umschalter
+daraus macht, wie zwei Jahrgänge derselben Meisterschaft auseinandergehalten werden.
+
+`.github/workflows/ci.yml` fährt Typecheck, Tests und Build bei jedem PR und jedem
+Push auf `main`. Deployt wird von Vercel selbst (Git-Integration): PR → Preview,
+`main` → Produktion. Der Workflow deployt nichts, er ist das Netz davor.
 
 ## Sicherheit
 
