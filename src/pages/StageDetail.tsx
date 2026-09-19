@@ -44,7 +44,7 @@ const TYPE_LABEL: Record<StageType, string> = {
 
 export function StageDetail() {
   const { stageId } = useParams();
-  const { tour, userId } = useApp();
+  const { tour, tours, setTour, userId } = useApp();
   const [stage, setStage] = useState<Stage | null>(null);
   const [stages, setStages] = useState<Stage[]>([]);
   const [riders, setRiders] = useState<Rider[]>([]);
@@ -100,6 +100,16 @@ export function StageDetail() {
       listMyAnswers(tour.id, userId),
     ])
       .then(([s, all, rs, tip, cls, ctips, qs, ans]) => {
+        // A link can point at a stage of another race than the one selected in
+        // the header (four World-Championship events, one stage each). Follow
+        // the stage instead of mixing the two: everything else on this page —
+        // the rider list above all — is loaded per tour, and a tip whose
+        // tour_id does not match its stage is rejected by RLS.
+        const known = s && tours.some((t) => t.id === s.tour_id);
+        if (known && s.tour_id !== tour.id) {
+          setTour(s.tour_id); // re-runs this effect with the matching tour
+          return;
+        }
         setStage(s);
         setStages(all);
         setRiders(rs);
@@ -114,7 +124,7 @@ export function StageDetail() {
           return listStageTips(stageId).then(setReveal);
       })
       .catch((e) => setError(e.message));
-  }, [stageId, tour.id, userId]);
+  }, [stageId, tour.id, tours, setTour, userId]);
 
   const { prev, next } = useMemo(() => {
     const i = stages.findIndex((s) => s.id === stageId);
@@ -147,13 +157,14 @@ export function StageDetail() {
   useAutoRefresh(loadResult, awaitingResult);
 
   async function save() {
-    if (!stageId) return;
+    if (!stageId || !stage) return;
     const chosen = isTtt ? teamPick : pick;
     if (!chosen) return;
     setError(null);
     try {
       await saveStageTip({
-        tourId: tour.id,
+        // the stage's own tour, never the header selection — they can differ
+        tourId: stage.tour_id,
         userId,
         stageId,
         riderId: isTtt ? null : pick,
