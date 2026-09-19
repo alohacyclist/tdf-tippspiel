@@ -6,7 +6,9 @@ import { SkeletonList } from "./Skeleton";
 
 // Per-stage breakdown shown when a leaderboard row is expanded: actual winner
 // plus the player's tip, coloured green on a hit and red on a miss. Only stages
-// that already have a result are passed in.
+// that already have a result are passed in. `labelFor` replaces the stage number
+// in the first column — a championship's races are all "stage 1", so there it
+// names the race instead.
 export function PlayerStageBreakdown({
   userId,
   resolvedStages,
@@ -14,6 +16,7 @@ export function PlayerStageBreakdown({
   tips,
   loading,
   error,
+  labelFor,
 }: {
   userId: string;
   resolvedStages: Stage[];
@@ -21,6 +24,7 @@ export function PlayerStageBreakdown({
   tips: PlayerStageTip[] | undefined;
   loading: boolean;
   error?: string;
+  labelFor?: (stage: Stage) => string;
 }) {
   if (error) return <p className="py-2 text-xs text-miss">{error}</p>;
   if (loading || !tips)
@@ -35,11 +39,14 @@ export function PlayerStageBreakdown({
     );
 
   const tipByStage = new Map(tips.map((t) => [t.stage_id, t]));
+  const labelWidth = labelFor ? "w-28" : "w-8";
 
   return (
     <div className="rounded-lg bg-surface2 px-3 py-2">
       <div className="flex items-baseline gap-2 border-b border-line pb-1 text-[10px] uppercase tracking-wide text-faint">
-        <span className="w-8 shrink-0">Et.</span>
+        <span className={`${labelWidth} shrink-0`}>
+          {labelFor ? "Rennen" : "Et."}
+        </span>
         <span className="flex-1">Sieger</span>
         <span className="flex-1 text-right">Tipp</span>
       </div>
@@ -57,7 +64,9 @@ export function PlayerStageBreakdown({
             : "text-faint";
         return (
           <div key={s.id} className="flex items-baseline gap-2 py-1 text-xs">
-            <span className="w-8 shrink-0 text-faint">{s.number}</span>
+            <span className={`${labelWidth} shrink-0 truncate text-faint`}>
+              {labelFor ? labelFor(s) : s.number}
+            </span>
             <span className="flex-1 truncate text-muted">{winner}</span>
             <span className={`flex-1 truncate text-right ${tipColor}`}>
               {tipLabel}
