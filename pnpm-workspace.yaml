@@ -1,0 +1,5 @@
+# esbuild (kommt über vite) darf sein postinstall-Script ausführen. Ohne diese
+# Entscheidung bricht pnpm den Install mit ERR_PNPM_IGNORED_BUILDS ab — nicht als
+# Warnung, sondern mit Exit-Code 1, und damit auch jeden CI-Lauf.
+allowBuilds:
+  esbuild: true
