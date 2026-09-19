@@ -96,7 +96,7 @@ cross join (values
   ('jack-haig',                  'Jack Haig',                  'Australien',     'AU'),
   ('jai-hindley',                'Jai Hindley',                'Australien',     'AU'),
   ('michael-matthews',           'Michael Matthews',           'Australien',     'AU'),
-  ('ben-oconnor',                'Ben O'connor',               'Australien',     'AU'),
+  ('ben-oconnor',                'Ben O''Connor',              'Australien',     'AU'),
   ('michael-storer',             'Michael Storer',             'Australien',     'AU'),
   ('luke-tuckwell',              'Luke Tuckwell',              'Australien',     'AU'),
   -- Kanada
