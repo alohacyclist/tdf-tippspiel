@@ -18,7 +18,7 @@ import { Confetti } from "../components/Confetti";
 import { PlayerStageBreakdown } from "../components/PlayerStageBreakdown";
 import { SkeletonList } from "../components/Skeleton";
 
-const COLS = 6;
+const COLS = 4;
 // header label -> title tooltip, so the abbreviations are self-explanatory
 const HEADERS: { label: string; title: string; align: "left" | "right" }[] = [
   { label: "#", title: "Rang", align: "left" },
@@ -29,8 +29,6 @@ const HEADERS: { label: string; title: string; align: "left" | "right" }[] = [
     align: "right",
   },
   { label: "✓", title: "Richtig getippte Etappensieger", align: "right" },
-  { label: "Sond.", title: "Punkte aus Sonderwertungen", align: "right" },
-  { label: "Frag.", title: "Punkte aus Fragen", align: "right" },
 ];
 type View = "tour" | "season";
 // Both leaderboard shapes share the columns we render.
@@ -237,12 +235,6 @@ export function Leaderboard() {
                     </td>
                     <td className="data py-2.5 pl-2 text-right text-muted">
                       {r.correct_winners}
-                    </td>
-                    <td className="data py-2.5 pl-2 text-right text-muted">
-                      {r.special_points}
-                    </td>
-                    <td className="data py-2.5 pl-2 text-right text-muted">
-                      {r.question_points}
                     </td>
                   </tr>
                   {open && (

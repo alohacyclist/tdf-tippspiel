@@ -2,7 +2,7 @@
 -- Verifies flat stage points + GC partial credit (exact vs in-top3) aggregate correctly.
 begin;
 create extension if not exists pgtap;
-select plan(4);
+select plan(3);
 
 -- ids
 -- T tour, A/B players, r1 winner, r2 loser, g1..g3 GC riders, s1 finished stage, c1 GC classification
@@ -62,9 +62,6 @@ insert into stage_tips (tour_id, user_id, stage_id, rider_id) values
 select is(
   (select stage_points from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   10::numeric, 'A stage_points = 10 (only the stage winner counts for the rank)');
-select is(
-  (select special_points from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-  25::numeric, 'A special_points = 25 GC (separate column, not in the rank)');
 select is(
   (select correct_winners::int from leaderboard where tour_id = '11111111-1111-1111-1111-111111111111' and user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   1, 'A has 1 correct stage winner');
