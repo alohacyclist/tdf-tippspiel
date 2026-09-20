@@ -1,0 +1,35 @@
+name: deploy-migrations
+
+# Auto-apply Supabase migrations to the linked project on every push to main that
+# touches supabase/migrations/**. Manual runs via workflow_dispatch. Project ref is
+# derived from the existing SUPABASE_URL secret (https://<ref>.supabase.co).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Derive project ref
+        run: |
+          echo "PROJECT_REF=$(echo "$SUPABASE_URL" | sed -E 's#https?://([^.]+)\..*#\1#')" >> "$GITHUB_ENV"
+      - name: Link project
+        run: supabase link --project-ref "$PROJECT_REF"
+      - name: Push migrations
+        run: supabase db push
