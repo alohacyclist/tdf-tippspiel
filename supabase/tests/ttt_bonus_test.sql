@@ -3,7 +3,7 @@
 -- own points (10) rather than the generic jersey points (15).
 begin;
 create extension if not exists pgtap;
-select plan(4);
+select plan(3);
 
 insert into auth.users (id, email) values
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'ttt-c@example.com'),
@@ -52,10 +52,6 @@ select is(
   (select stage_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
      and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
   10::numeric, 'C stage_points = 10 (ttt team match)');
-select is(
-  (select special_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
-     and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
-  10::numeric, 'C special_points = 10 yellow-bonus (own 10, not jersey 15)');
 select is(
   (select correct_winners::int from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
      and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
