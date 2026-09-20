@@ -6,20 +6,16 @@ import {
   getMyStageTip,
   getStage,
   listClassifications,
-  listMyAnswers,
   listMyClassificationTips,
-  listQuestions,
   listRiders,
   listStages,
   listStageTips,
   saveStageTip,
-  type QuestionWithOptions,
   type RevealedTip,
 } from "../lib/queries";
 import type {
   Classification,
   ClassificationTip,
-  QuestionAnswer,
   Rider,
   Stage,
   StageType,
@@ -29,7 +25,6 @@ import { RiderCombobox } from "../components/RiderCombobox";
 import { Countdown } from "../components/Countdown";
 import { StageProfile } from "../components/StageProfile";
 import { ClassificationCard } from "../components/ClassificationCard";
-import { QuestionCard } from "../components/QuestionCard";
 import { pcsStageUrl } from "../lib/pcs";
 import { stageLabel, stagesNounPlural } from "../lib/stageLabel";
 import { SkeletonList } from "../components/Skeleton";
@@ -53,18 +48,12 @@ export function StageDetail() {
   const [reveal, setReveal] = useState<RevealedTip[]>([]);
   const [clsList, setClsList] = useState<Classification[]>([]);
   const [clsTips, setClsTips] = useState<ClassificationTip[]>([]);
-  const [questions, setQuestions] = useState<QuestionWithOptions[]>([]);
-  const [answers, setAnswers] = useState<QuestionAnswer[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   const stageClassifications = useMemo(
     () => clsList.filter((c) => c.stage_id === stageId),
     [clsList, stageId],
-  );
-  const stageQuestions = useMemo(
-    () => questions.filter((q) => q.stage_id === stageId),
-    [questions, stageId],
   );
 
   const isTtt = stage?.type === "ttt";
@@ -96,10 +85,8 @@ export function StageDetail() {
       getMyStageTip(stageId, userId),
       listClassifications(tour.id),
       listMyClassificationTips(tour.id, userId),
-      listQuestions(tour.id),
-      listMyAnswers(tour.id, userId),
     ])
-      .then(([s, all, rs, tip, cls, ctips, qs, ans]) => {
+      .then(([s, all, rs, tip, cls, ctips]) => {
         // A link can point at a stage of another race than the one selected in
         // the header (four World-Championship events, one stage each). Follow
         // the stage instead of mixing the two: everything else on this page —
@@ -117,8 +104,6 @@ export function StageDetail() {
         setTeamPick(tip?.team ?? null);
         setClsList(cls);
         setClsTips(ctips);
-        setQuestions(qs);
-        setAnswers(ans);
         setReveal([]);
         if (s && isPast(s.start_time))
           return listStageTips(stageId).then(setReveal);
@@ -377,22 +362,6 @@ export function StageDetail() {
               classification={c}
               riders={riders}
               myTips={clsTips.filter((t) => t.classification_id === c.id)}
-              tourId={tour.id}
-              userId={userId}
-              deadlineOverride={stage.start_time}
-            />
-          ))}
-        </div>
-      )}
-
-      {stageQuestions.length > 0 && (
-        <div className="mt-6 flex flex-col gap-3">
-          <h2 className="font-semibold text-ink">Etappen-Fragen</h2>
-          {stageQuestions.map((q) => (
-            <QuestionCard
-              key={q.id}
-              question={q}
-              myAnswer={answers.find((a) => a.question_id === q.id) ?? null}
               tourId={tour.id}
               userId={userId}
               deadlineOverride={stage.start_time}

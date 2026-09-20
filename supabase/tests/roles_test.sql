@@ -18,21 +18,21 @@ update profiles set status = 'active', role = 'member', display_name = 'RoleMemb
 insert into tours (id, year, name, is_active)
   values ('66660000-0000-0000-0000-000000000001', 2095, 'Roles Test', false);
 
--- a tour-wide question to attempt deleting
-insert into question (id, tour_id, kind, prompt, points, deadline, is_open) values
-  ('b0000000-0000-0000-0000-000000000004', '66660000-0000-0000-0000-000000000001',
-   'boolean', 'QX', 1, now() + interval '1 day', true);
+-- a tour-wide classification to attempt deleting
+insert into classifications (id, tour_id, key, name, type, slots, ordered, deadline, is_open)
+values ('b0000000-0000-0000-0000-000000000004', '66660000-0000-0000-0000-000000000001',
+   'cx', 'CX', 'custom', 1, false, now() + interval '1 day', true);
 
 -- ---- editor: content yes, delete/roles no ----
 set local role authenticated;
 select set_config('request.jwt.claims',
   json_build_object('sub', 'ee000000-0000-0000-0000-000000000002')::text, true);
 select lives_ok(
-  $$ select public.admin_create_question('66660000-0000-0000-0000-000000000001','boolean','q',1,
-       null, now() + interval '1 day', null) $$,
+  $$ select public.admin_create_classification('66660000-0000-0000-0000-000000000001',
+       'ck','CK','custom',1,false,null,null, now() + interval '1 day') $$,
   'editor can create content');
 select throws_ok(
-  $$ select public.admin_delete_question('b0000000-0000-0000-0000-000000000004') $$,
+  $$ select public.admin_delete_classification('b0000000-0000-0000-0000-000000000004') $$,
   '42501', 'editor cannot delete (admin only)');
 select throws_ok(
   $$ select public.admin_set_role('ff000000-0000-0000-0000-000000000003','admin') $$,
@@ -44,8 +44,8 @@ set local role authenticated;
 select set_config('request.jwt.claims',
   json_build_object('sub', 'ff000000-0000-0000-0000-000000000003')::text, true);
 select throws_ok(
-  $$ select public.admin_create_question('66660000-0000-0000-0000-000000000001','boolean','q2',1,
-       null, now() + interval '1 day', null) $$,
+  $$ select public.admin_create_classification('66660000-0000-0000-0000-000000000001',
+       'ck2','CK2','custom',1,false,null,null, now() + interval '1 day') $$,
   '42501', 'member cannot create content');
 reset role;
 

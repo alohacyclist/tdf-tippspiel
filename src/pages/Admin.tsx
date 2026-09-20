@@ -4,11 +4,9 @@ import { useApp } from "../lib/appContext";
 import {
   listClassifications,
   listProfiles,
-  listQuestions,
   listRiders,
   listStages,
   type AdminProfile,
-  type QuestionWithOptions,
 } from "../lib/queries";
 import {
   adminCreateClassification,
@@ -31,7 +29,6 @@ import type {
 } from "../lib/types";
 import { formatLocal, isPast } from "../lib/time";
 import { RiderCombobox } from "../components/RiderCombobox";
-import { QuestionsSection } from "../components/AdminQuestions";
 import { groupTours } from "../lib/eventGroup";
 import { stagesNounPlural } from "../lib/stageLabel";
 
@@ -39,24 +36,18 @@ function toIso(local: string): string {
   return new Date(local).toISOString();
 }
 
-type AdminTab =
-  "results" | "classifications" | "questions" | "riders" | "tips" | "users";
+type AdminTab = "results" | "classifications" | "riders" | "tips" | "users";
 
 // Deterministic to-do list: what still needs an admin action right now. No
-// scraping — derived from the data already loaded (started stage without a
-// winner, past-deadline question without a result).
+// scraping — derived from the data already loaded (started stage without a winner).
 function AdminTodo({
   pendingStages,
-  pendingQuestions,
   onPickStage,
-  onPickQuestion,
 }: {
   pendingStages: Stage[];
-  pendingQuestions: QuestionWithOptions[];
   onPickStage: (id: string) => void;
-  onPickQuestion: () => void;
 }) {
-  const count = pendingStages.length + pendingQuestions.length;
+  const count = pendingStages.length;
   return (
     <div className="mt-4 rounded-xl border border-line bg-surface p-4">
       <h2 className="mb-2 flex items-center gap-2 font-semibold text-ink">
@@ -91,23 +82,6 @@ function AdminTodo({
               </button>
             </div>
           ))}
-          {pendingQuestions.map((q) => (
-            <div
-              key={q.id}
-              className="flex items-center justify-between gap-2 rounded-lg bg-paper px-3 py-2"
-            >
-              <span className="min-w-0 truncate text-sm text-ink">
-                Frage · <span className="text-miss">Ergebnis fehlt</span>
-                <span className="ml-1 text-xs text-faint">{q.prompt}</span>
-              </span>
-              <button
-                onClick={onPickQuestion}
-                className="shrink-0 rounded-lg bg-surface2 px-3 py-1 text-xs font-semibold text-ink"
-              >
-                Öffnen
-              </button>
-            </div>
-          ))}
         </div>
       )}
     </div>
@@ -119,23 +93,20 @@ export function Admin() {
   const [stages, setStages] = useState<Stage[]>([]);
   const [riders, setRiders] = useState<Rider[]>([]);
   const [cls, setCls] = useState<Classification[]>([]);
-  const [questions, setQuestions] = useState<QuestionWithOptions[]>([]);
   const [profiles, setProfiles] = useState<AdminProfile[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   async function reload() {
     try {
-      const [s, r, c, q, p] = await Promise.all([
+      const [s, r, c, p] = await Promise.all([
         listStages(tour.id),
         listRiders(tour.id),
         listClassifications(tour.id),
-        listQuestions(tour.id),
         isAdmin ? listProfiles() : Promise.resolve([]),
       ]);
       setStages(s);
       setRiders(r);
       setCls(c);
-      setQuestions(q);
       setProfiles(p);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Fehler");
@@ -172,17 +143,6 @@ export function Admin() {
       ),
     [stages],
   );
-  const pendingQuestions = useMemo(
-    () =>
-      questions.filter((q) => {
-        const dl = q.stage_id
-          ? (stageById.get(q.stage_id)?.start_time ?? null)
-          : q.deadline;
-        return isPast(dl) && !q.is_resolved;
-      }),
-    [questions, stageById],
-  );
-
   function openStageResult(id: string) {
     setResultStageId(id);
     setTab("results");
@@ -191,7 +151,6 @@ export function Admin() {
   const tabs: { key: AdminTab; label: string }[] = [
     { key: "results", label: "Ergebnisse" },
     { key: "classifications", label: "Wertungen" },
-    { key: "questions", label: "Fragen" },
     { key: "riders", label: "Fahrer" },
     ...(isAdmin
       ? [
@@ -212,7 +171,7 @@ export function Admin() {
       {error && <p className="mt-2 text-sm text-miss">{error}</p>}
 
       {/* The switcher shows a championship as a single line, but every race of it
-          is its own tour with its own stage, startlist and questions — so admin
+          is its own tour with its own stage and startlist — so admin
           work needs the races back one by one. */}
       {group.length > 1 && (
         <label className="mt-3 flex items-center gap-2 text-sm text-muted">
@@ -231,12 +190,7 @@ export function Admin() {
         </label>
       )}
 
-      <AdminTodo
-        pendingStages={pendingStages}
-        pendingQuestions={pendingQuestions}
-        onPickStage={openStageResult}
-        onPickQuestion={() => setTab("questions")}
-      />
+      <AdminTodo pendingStages={pendingStages} onPickStage={openStageResult} />
 
       <div className="mt-6 flex gap-1 overflow-x-auto border-b border-line">
         {tabs.map((t) => (
@@ -292,17 +246,6 @@ export function Admin() {
               )}
             </div>
           </>
-        )}
-
-        {tab === "questions" && (
-          <QuestionsSection
-            tourId={tour.id}
-            stages={stages}
-            questions={questions}
-            stageById={stageById}
-            isAdmin={isAdmin}
-            onDone={reload}
-          />
         )}
 
         {tab === "riders" && (
@@ -523,9 +466,7 @@ function StageTipBackfill({
       onSubmit={submit}
       className="mt-8 flex flex-col gap-2 rounded-xl border border-line bg-surface p-4"
     >
-      <h2 className="font-semibold text-ink">
-        Etappensieger-Tipp nachtragen
-      </h2>
+      <h2 className="font-semibold text-ink">Etappensieger-Tipp nachtragen</h2>
       <p className="text-xs text-faint">
         Trägt einen Tipp für einen Spieler ein — auch nach Deadline.
       </p>
@@ -625,9 +566,7 @@ function UsersSection({
 
   return (
     <>
-      <h2 className="mb-2 mt-2 font-semibold text-ink">
-        Nutzer & Rollen
-      </h2>
+      <h2 className="mb-2 mt-2 font-semibold text-ink">Nutzer & Rollen</h2>
       {error && <p className="mb-2 text-sm text-miss">{error}</p>}
       <div className="flex flex-col gap-2">
         {profiles.map((p) => (
@@ -635,9 +574,7 @@ function UsersSection({
             key={p.id}
             className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2"
           >
-            <span className="text-sm text-ink">
-              {p.display_name ?? "—"}
-            </span>
+            <span className="text-sm text-ink">{p.display_name ?? "—"}</span>
             <div className="flex gap-2">
               <select
                 value={p.status}

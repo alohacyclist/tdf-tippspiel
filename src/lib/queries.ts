@@ -5,10 +5,6 @@ import type {
   LeaderboardRow,
   ProfileRole,
   ProfileStatus,
-  Question,
-  QuestionAnswer,
-  QuestionOption,
-  QuestionResult,
   Rider,
   SeasonLeaderboardRow,
   Stage,
@@ -374,8 +370,6 @@ export async function getLeaderboardForTours(
     sum.display_name = sum.display_name ?? r.display_name;
     sum.correct_winners += r.correct_winners;
     sum.stage_points += r.stage_points;
-    sum.special_points += r.special_points;
-    sum.question_points += r.question_points;
   }
   return [...byUser.values()].sort(
     (a, b) =>
@@ -394,90 +388,6 @@ export async function getSeasonLeaderboard(
       .eq("year", year)
       .order("stage_points", { ascending: false })
       .order("correct_winners", { ascending: false }),
-  );
-}
-
-export interface QuestionWithOptions extends Question {
-  options: QuestionOption[];
-}
-
-export async function listQuestions(
-  tourId: string,
-): Promise<QuestionWithOptions[]> {
-  return unwrap(
-    await supabase
-      .from("question")
-      .select("*, options:question_option(*)")
-      .eq("tour_id", tourId)
-      .order("sort_order"),
-  );
-}
-
-export async function listMyAnswers(
-  tourId: string,
-  userId: string,
-): Promise<QuestionAnswer[]> {
-  return unwrap(
-    await supabase
-      .from("question_answer")
-      .select("*")
-      .eq("tour_id", tourId)
-      .eq("user_id", userId),
-  );
-}
-
-export async function saveQuestionAnswer(a: {
-  tourId: string;
-  userId: string;
-  questionId: string;
-  optionId?: string | null;
-  boolValue?: boolean | null;
-}): Promise<void> {
-  const res = await supabase.from("question_answer").upsert(
-    {
-      tour_id: a.tourId,
-      user_id: a.userId,
-      question_id: a.questionId,
-      option_id: a.optionId ?? null,
-      bool_value: a.boolValue ?? null,
-    },
-    { onConflict: "user_id,question_id" },
-  );
-  if (res.error) throw new Error(res.error.message);
-}
-
-export interface RevealedAnswer {
-  id: string;
-  user_id: string;
-  option_id: string | null;
-  bool_value: boolean | null;
-  option: { label: string } | null;
-  player: { display_name: string | null } | null;
-}
-
-// RLS reveals other players' answers only at/after the (derived) deadline.
-export async function listQuestionAnswers(
-  questionId: string,
-): Promise<RevealedAnswer[]> {
-  return unwrap(
-    await supabase
-      .from("question_answer")
-      .select(
-        "id, user_id, option_id, bool_value, option:question_option(label), player:profiles(display_name)",
-      )
-      .eq("question_id", questionId),
-  );
-}
-
-export async function getQuestionResult(
-  questionId: string,
-): Promise<QuestionResult | null> {
-  return unwrap(
-    await supabase
-      .from("question_result")
-      .select("*")
-      .eq("question_id", questionId)
-      .maybeSingle(),
   );
 }
 
