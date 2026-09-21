@@ -15,8 +15,8 @@ update profiles set status = 'active', role = 'editor', display_name = 'RoleEdit
 update profiles set status = 'active', role = 'member', display_name = 'RoleMember'
   where id = 'ff000000-0000-0000-0000-000000000003';
 
-insert into tours (id, year, name, is_active)
-  values ('66660000-0000-0000-0000-000000000001', 2095, 'Roles Test', false);
+insert into tours (id, year, name, pcs_slug, is_active)
+  values ('66660000-0000-0000-0000-000000000001', 2095, 'Roles Test', 'roles-test', false);
 
 -- a tour-wide classification to attempt deleting
 insert into classifications (id, tour_id, key, name, type, slots, ordered, deadline, is_open)

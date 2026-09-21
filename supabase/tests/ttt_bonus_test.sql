@@ -1,6 +1,6 @@
--- TTT team-tip scoring + per-classification point override (0004). Needs Docker.
--- Verifies: ttt tip scored by TEAM (not rider), and "gelbes Trikot" bonus uses its
--- own points (10) rather than the generic jersey points (15).
+-- TTT team-tip scoring. Needs Docker.
+-- Verifies the team-time-trial tip is scored by TEAM (not rider), and that the
+-- jersey tip alongside it changes nothing: since 0036/0038 only winner tips count.
 begin;
 create extension if not exists pgtap;
 select plan(3);
@@ -13,8 +13,8 @@ update profiles set status = 'active', display_name = 'TeamC'
 update profiles set status = 'active', display_name = 'TeamD'
   where id = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 
-insert into tours (id, year, name, is_active)
-  values ('99999999-9999-9999-9999-999999999999', 2098, 'TTT Test', false);
+insert into tours (id, year, name, pcs_slug, is_active)
+  values ('99999999-9999-9999-9999-999999999999', 2098, 'TTT Test', 'ttt-test', false);
 
 insert into scoring_config (tour_id, key, value) values
   ('99999999-9999-9999-9999-999999999999', 'stage_winner_points',   10),
@@ -49,17 +49,17 @@ insert into classification_tips (tour_id, user_id, classification_id, rider_id, 
    'cccc1111-0000-0000-0000-000000000000', 'aaaa1111-0000-0000-0000-000000000000', 1);
 
 select is(
-  (select stage_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
-     and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
-  10::numeric, 'C stage_points = 10 (ttt team match)');
-select is(
   (select correct_winners::int from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
      and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
-  1, 'C has 1 correct stage winner (ttt team match)');
+  1, 'C has 1 correct winner (ttt team match); the jersey hit adds nothing');
 select is(
-  (select stage_points from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
+  (select correct_winners::int from leaderboard where tour_id = '99999999-9999-9999-9999-999999999999'
      and user_id = 'dddddddd-dddd-dddd-dddd-dddddddddddd'),
-  0::numeric, 'D wrong team = 0 stage points');
+  0, 'D tipped the wrong team = 0');
+select is(
+  (select correct_winners::int from season_leaderboard where year = 2098
+     and user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
+  1, 'the season table carries the same count');
 
 select * from finish();
 rollback;

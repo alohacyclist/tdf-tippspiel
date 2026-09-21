@@ -18,17 +18,16 @@ import { Confetti } from "../components/Confetti";
 import { PlayerStageBreakdown } from "../components/PlayerStageBreakdown";
 import { SkeletonList } from "../components/Skeleton";
 
-const COLS = 4;
-// header label -> title tooltip, so the abbreviations are self-explanatory
+const COLS = 3;
+// header label -> title tooltip, so the abbreviation is self-explanatory
 const HEADERS: { label: string; title: string; align: "left" | "right" }[] = [
   { label: "#", title: "Rang", align: "left" },
   { label: "Name", title: "Spieler", align: "left" },
   {
-    label: "Etap.",
-    title: "Etappen-Punkte (bestimmen den Rang)",
+    label: "✓",
+    title: "Richtig getippte Sieger — sie bestimmen den Rang",
     align: "right",
   },
-  { label: "✓", title: "Richtig getippte Etappensieger", align: "right" },
 ];
 type View = "tour" | "season";
 // Both leaderboard shapes share the columns we render.
@@ -121,8 +120,8 @@ export function Leaderboard() {
   const rows: Row[] = view === "tour" ? tourRows : seasonRows;
   const expandable = view === "tour";
 
-  // Rank by stage points only; ties share a rank.
-  let lastPts = Number.NaN;
+  // Rank by correct winner tips; ties share a rank.
+  let lastCount = Number.NaN;
   let lastRank = 0;
 
   return (
@@ -155,9 +154,9 @@ export function Leaderboard() {
       <p className="mb-3 text-xs text-faint">
         {view === "tour"
           ? isEvent
-            ? "Alle Rennen dieses Events zusammen. Zeile antippen für die Tipps."
-            : "Rang nach Etappen-Punkten. Zeile antippen für die Etappen-Tipps."
-          : `Gesamtwertung ${tour.year} über alle Rennen.`}
+            ? "Alle Rennen dieses Events zusammen, Rang nach richtig getippten Siegern. Zeile antippen für die Tipps."
+            : "Rang nach richtig getippten Siegern. Zeile antippen für die Tipps."
+          : `Gesamtwertung ${tour.year}: richtig getippte Sieger, jedes Rennen zählt gleich.`}
       </p>
 
       {loading && <SkeletonList rows={6} height="h-9" />}
@@ -182,9 +181,9 @@ export function Leaderboard() {
           </thead>
           <tbody>
             {rows.map((r, i) => {
-              if (r.stage_points !== lastPts) {
+              if (r.correct_winners !== lastCount) {
                 lastRank = i + 1;
-                lastPts = r.stage_points;
+                lastCount = r.correct_winners;
               }
               const open = expandable && openId === r.user_id;
               return (
@@ -214,7 +213,7 @@ export function Leaderboard() {
                       {/* leader wears the jersey colour, like a race plate */}
                       <span
                         className={`plate inline-flex h-6 min-w-[1.6rem] items-center justify-center px-1 text-base ${
-                          lastRank === 1 && r.stage_points > 0
+                          lastRank === 1 && r.correct_winners > 0
                             ? "bg-accent-solid text-accent-contrast"
                             : "text-muted"
                         }`}
@@ -231,9 +230,6 @@ export function Leaderboard() {
                       {r.display_name ?? "—"}
                     </td>
                     <td className="data py-2.5 pl-2 text-right font-semibold text-accent">
-                      {r.stage_points}
-                    </td>
-                    <td className="data py-2.5 pl-2 text-right text-muted">
                       {r.correct_winners}
                     </td>
                   </tr>
@@ -268,8 +264,7 @@ export function Leaderboard() {
       )}
 
       <p className="mt-3 text-xs text-faint">
-        Etap. = Etappen-Punkte (Rang) · ✓ = richtige Etappen · Sond. =
-        Sonderwertungen · Frag. = Fragen
+        ✓ = richtig getippte Sieger. Nur sie zählen; Gleichstand teilt den Rang.
       </p>
     </div>
   );

@@ -18,10 +18,9 @@ Supabase (Postgres + Auth + Row Level Security) · GitHub Actions (Ergebnis-Impo
 | | |
 |---|---|
 | **Etappensieger** | Ein Tipp pro Etappe, änderbar bis zum Start. Beim Mannschaftszeitfahren wird ein Team getippt. |
-| **Sonderwertungen** | Vorab-Tipps auf Gesamtwertung (Top 3), Punkte-, Berg- und Nachwuchstrikot. |
-| **Fragen** | Frei anlegbare Ja/Nein- oder Multiple-Choice-Fragen, optional an eine Etappe gekoppelt. |
-| **Rangliste** | Der Rang zählt **nur Etappensieger-Punkte**. Sonderwertungen und Fragen stehen als eigene Spalten daneben. |
-| **Saison** | Alle Rennen eines Jahres summiert. Ein Monument- oder WM-Sieg wiegt mehr als eine Grand-Tour-Etappe (pro Rennen konfigurierbar). |
+| **Sonderwertungen** | Vorab-Tipps auf Gesamtwertung (Top 3), Punkte-, Berg- und Nachwuchstrikot, bei der WM das Podium. Reine Ehrensache — sie zählen nicht für den Rang. |
+| **Rangliste** | Eine einzige Zahl: **wie oft der Sieger richtig getippt wurde**. Ein Rennen zählt, sobald sein Ergebnis eingetragen ist; ein abgebrochenes zählt für niemanden. Gleichstand teilt den Rang. |
+| **Saison** | Alle Rennen eines Jahres summiert — dieselbe Zahl, ungewichtet: eine WM zählt wie eine Grand-Tour-Etappe. |
 
 ## Warum die Spielregeln in der Datenbank stehen
 
@@ -85,9 +84,8 @@ Alle weiteren Spieler werden danach im Admin-UI freigeschaltet (Tab **Nutzer**).
 Rennen werden als Migration geseedet — ein Eintagesrennen ist schlicht eine Tour mit
 genau einer Etappe (`tours.kind = 'one_day'`).
 
-1. **Tour + Route**: `tours` (Jahr, Name, `pcs_slug`, `kind`), `scoring_config`
-   (Punkte pro Sieg), `stages`. Startzeiten als UTC mit Offset — `start_time` **ist**
-   die Tipp-Deadline.
+1. **Tour + Route**: `tours` (Jahr, Name, `pcs_slug`, `kind`) und `stages`.
+   Startzeiten als UTC mit Offset — `start_time` **ist** die Tipp-Deadline.
 2. **Startliste**: `riders` mit `pcs_slug` als Schlüssel (matcht den Ergebnis-Import).
    Bei der WM steht in `riders.team` die Nation.
 3. **Höhenprofile**: `public/stage-profiles/<pcs_slug>/stage-<n>.jpg`. Fehlt eine
@@ -99,9 +97,8 @@ genau einer Etappe (`tours.kind = 'one_day'`).
 Vorlagen: `0019` (Grand Tour), `0027` (Eintagesrennen), `0021` (Startliste abgleichen).
 
 **Meisterschaft mit mehreren Rennen** (WM: Straße und Zeitfahren, Frauen und Männer):
-jedes Rennen bleibt eine eigene Tour — eigene Startliste, eigene Punkte, und RLS
-bindet einen Tipp an sein Rennen. Zusammengehalten werden sie über
-`tours.event_group` (+ `event_group_name`, Vorlage `0034`): gleicher Wert = eine
+jedes Rennen bleibt eine eigene Tour — eigene Startliste, und RLS bindet einen
+Tipp an sein Rennen. Zusammengehalten werden sie über `tours.event_group` (+ `event_group_name`, Vorlage `0034`): gleicher Wert = eine
 Zeile im Umschalter, dahinter eine Seite mit allen Rennen, jedes einzeln tippbar,
 und eine gemeinsame Rangliste. `null` heißt Einzelrennen — Grand Tours und
 Monumente bleiben, wie sie sind.
@@ -134,7 +131,7 @@ supabase test db     # pgTAP: RLS, Reveal, Scoring, Rollen (braucht Docker)
 
 Die Testabdeckung liegt bewusst in der Datenbank, weil dort die Spielregeln stehen:
 Reveal vor/nach Start, Tipp vor/nach Deadline, gesperrte Accounts, Rollen-Gates und
-die Punkte-Mathematik (`supabase/tests/`).
+die Wertung (`supabase/tests/`).
 
 Im Frontend wird nur getestet, was Regeln kennt statt Pixel: die Event-Gruppierung
 (`src/lib/eventGroup.test.ts`) — welche Rennen zusammengehören, was der Umschalter
