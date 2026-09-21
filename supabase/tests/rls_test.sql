@@ -13,8 +13,8 @@ update profiles set status = 'active', display_name = 'RlsA' where id = 'aaaaaaa
 update profiles set status = 'active', display_name = 'RlsB' where id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 -- C stays 'pending'
 
-insert into tours (id, year, name, is_active)
-  values ('11111111-1111-1111-1111-111111111111', 2098, 'RLS Test', false);
+insert into tours (id, year, name, pcs_slug, is_active)
+  values ('11111111-1111-1111-1111-111111111111', 2098, 'RLS Test', 'rls-test', false);
 insert into riders (id, tour_id, pcs_slug, name) values
   ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'x1', 'X1'),
   ('33333333-3333-3333-3333-333333333333', '11111111-1111-1111-1111-111111111111', 'x2', 'X2');

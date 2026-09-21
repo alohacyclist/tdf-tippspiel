@@ -344,7 +344,6 @@ export async function getLeaderboard(
       .from("leaderboard")
       .select("*")
       .eq("tour_id", tourId)
-      .order("stage_points", { ascending: false })
       .order("correct_winners", { ascending: false }),
   );
 }
@@ -369,11 +368,9 @@ export async function getLeaderboardForTours(
     }
     sum.display_name = sum.display_name ?? r.display_name;
     sum.correct_winners += r.correct_winners;
-    sum.stage_points += r.stage_points;
   }
   return [...byUser.values()].sort(
-    (a, b) =>
-      b.stage_points - a.stage_points || b.correct_winners - a.correct_winners,
+    (a, b) => b.correct_winners - a.correct_winners,
   );
 }
 
@@ -386,7 +383,6 @@ export async function getSeasonLeaderboard(
       .from("season_leaderboard")
       .select("*")
       .eq("year", year)
-      .order("stage_points", { ascending: false })
       .order("correct_winners", { ascending: false }),
   );
 }

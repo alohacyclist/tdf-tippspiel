@@ -14,8 +14,8 @@ update profiles set status = 'active', role = 'admin', display_name = 'AdminA'
 update profiles set status = 'active', display_name = 'MemberB'
   where id = 'b0000000-0000-0000-0000-000000000002';
 
-insert into tours (id, year, name, is_active)
-  values ('77770000-0000-0000-0000-000000000001', 2097, 'Admin Test', false);
+insert into tours (id, year, name, pcs_slug, is_active)
+  values ('77770000-0000-0000-0000-000000000001', 2097, 'Admin Test', 'admin-test', false);
 
 insert into riders (id, tour_id, pcs_slug, name, team) values
   ('51110000-0000-0000-0000-000000000001', '77770000-0000-0000-0000-000000000001', 'r1', 'Rider One', 'T1'),
