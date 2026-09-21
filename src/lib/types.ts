@@ -91,12 +91,12 @@ export interface ClassificationTip {
   slot: number;
 }
 
+// The standings are the count of correct winner tips — nothing else is scored.
 export interface LeaderboardRow {
   tour_id: string;
   user_id: string;
   display_name: string | null;
   correct_winners: number;
-  stage_points: number;
 }
 
 export interface SeasonLeaderboardRow {
@@ -104,5 +104,4 @@ export interface SeasonLeaderboardRow {
   user_id: string;
   display_name: string | null;
   correct_winners: number;
-  stage_points: number;
 }
