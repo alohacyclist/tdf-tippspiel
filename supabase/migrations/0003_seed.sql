@@ -49,4 +49,4 @@ on conflict (tour_id, key) do nothing;
 -- in auth.users first). Promotes + activates the owner. Idempotent.
 -- ---------------------------------------------------------------------------
 -- update profiles set is_admin = true, status = 'active'
--- where id = (select id from auth.users where email = 'christian.mueller@tiretask.de');
+-- where id = (select id from auth.users where email = 'DEINE@EMAIL');
